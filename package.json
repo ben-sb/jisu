@@ -1,0 +1,19 @@
+{
+  "name": "wasm-compiler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "tsc && node dist/test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/charcodes": "^0.2.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "charcodes": "^0.2.0"
+  }
+}
