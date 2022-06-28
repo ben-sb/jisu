@@ -10,4 +10,4 @@ const tokens = tokeniser.tokenise();
 const parser = new Parser(tokens);
 const ast = parser.parse();
 
-console.log(ast);
+console.log(JSON.stringify(ast));

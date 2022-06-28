@@ -1,6 +1,7 @@
 import * as CharCodes from 'charcodes';
 import { Token } from './tokens/token';
 import { tokenMatchers } from './matchers/tokenMatcher';
+import { tokenTypes } from './tokens/tokenTypes';
 
 export class Tokeniser {
     private readonly tokens: Token[];
@@ -33,19 +34,18 @@ export class Tokeniser {
                 if (result.matched) {
                     this.tokens.push(result.token);
                     this.position += result.length;
-                    console.log(result.token);
                     matched = true;
                     break;
                 }
             }
 
             if (!matched) {
-                console.log(inputStr.length);
                 throw new Error(`Unable to match input ${inputStr}`);
             }
             this.readWhitespace();
         }
 
+        this.tokens.push(new Token(tokenTypes.EOF, null));
         return this.tokens;
     }
 

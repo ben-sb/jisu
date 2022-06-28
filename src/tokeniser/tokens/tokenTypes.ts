@@ -20,7 +20,7 @@ interface TokenOptions {
 type TokenTypes = { [name: string]: TokenType };
 
 export const tokenTypes: TokenTypes = {
-    None: new TokenType(''),
+    EOF: new TokenType('eof'),
 
     // keywords
     Var: new TokenType('var'),
@@ -30,6 +30,7 @@ export const tokenTypes: TokenTypes = {
     Number: new TokenType('number'),
 
     // operator tokens
+    Comma: new TokenType(',', { precedence: 1 }),
     Assignment: new TokenType('=', { precedence: 2 }),
     LessThan: new TokenType('<', { precedence: 10 }),
     LessThanEqual: new TokenType('<=', { precedence: 10 }),

@@ -15,7 +15,7 @@ type TokenMatchResult = MatchSuccess | MatchFailure;
 
 export type TokenMatcher = (input: string) => TokenMatchResult;
 
-const basicMatcher = (type: TokenType, regex: RegExp): TokenMatcher => {
+const regexMatcher = (type: TokenType, regex: RegExp): TokenMatcher => {
     return (input: string) => {
         const result = input.match(regex);
         if (result) {
@@ -35,25 +35,26 @@ const basicMatcher = (type: TokenType, regex: RegExp): TokenMatcher => {
 };
 
 export const tokenMatchers = [
-    basicMatcher(tokenTypes.Var, /^var/),
-    basicMatcher(tokenTypes.Identifier, /^[a-zA-Z_$]?[a-zA-Z0-9_$]+/),
+    regexMatcher(tokenTypes.Var, /^var/),
+    regexMatcher(tokenTypes.Identifier, /^[a-zA-Z_$]?[a-zA-Z0-9_$]+/),
 
-    basicMatcher(tokenTypes.Number, /^[0-9]+/),
+    regexMatcher(tokenTypes.Number, /^[0-9]+/),
 
-    basicMatcher(tokenTypes.Assignment, /^=/),
-    basicMatcher(tokenTypes.LessThanEqual, /^<=/),
-    basicMatcher(tokenTypes.LessThan, /^</),
-    basicMatcher(tokenTypes.GreaterThanEqual, /^>=/),
-    basicMatcher(tokenTypes.GreaterThan, /^>/),
-    basicMatcher(tokenTypes.LeftShift, /^<</),
-    basicMatcher(tokenTypes.RightShift, /^>>/),
-    basicMatcher(tokenTypes.UnsignedRightShift, /^>>>/),
-    basicMatcher(tokenTypes.Add, /^\+/),
-    basicMatcher(tokenTypes.Subtract, /^-/),
-    basicMatcher(tokenTypes.Multiply, /^\*/),
-    basicMatcher(tokenTypes.Divide, /^\//),
-    basicMatcher(tokenTypes.Modulus, /^%/),
-    basicMatcher(tokenTypes.Exponential, /^\*\*/),
-    basicMatcher(tokenTypes.LeftBracket, /^\(/),
-    basicMatcher(tokenTypes.RightBracket, /^\)/)
+    regexMatcher(tokenTypes.Comma, /^,/),
+    regexMatcher(tokenTypes.Assignment, /^=/),
+    regexMatcher(tokenTypes.LessThanEqual, /^<=/),
+    regexMatcher(tokenTypes.LessThan, /^</),
+    regexMatcher(tokenTypes.GreaterThanEqual, /^>=/),
+    regexMatcher(tokenTypes.GreaterThan, /^>/),
+    regexMatcher(tokenTypes.LeftShift, /^<</),
+    regexMatcher(tokenTypes.RightShift, /^>>/),
+    regexMatcher(tokenTypes.UnsignedRightShift, /^>>>/),
+    regexMatcher(tokenTypes.Add, /^\+/),
+    regexMatcher(tokenTypes.Subtract, /^-/),
+    regexMatcher(tokenTypes.Multiply, /^\*/),
+    regexMatcher(tokenTypes.Divide, /^\//),
+    regexMatcher(tokenTypes.Modulus, /^%/),
+    regexMatcher(tokenTypes.Exponential, /^\*\*/),
+    regexMatcher(tokenTypes.LeftBracket, /^\(/),
+    regexMatcher(tokenTypes.RightBracket, /^\)/)
 ];

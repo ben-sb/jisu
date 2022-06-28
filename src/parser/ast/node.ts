@@ -62,7 +62,7 @@ export type VariableDeclarator = Node & {
 export type VariableDeclaration = Node & {
     type: 'VariableDeclaration'
     kind: 'var';
-    declarations: VariableDeclarator[];
+    declarators: VariableDeclarator[];
 }
 
 export type IfStatement = Node & {
