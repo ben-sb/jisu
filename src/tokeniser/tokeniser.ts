@@ -19,7 +19,7 @@ export class Tokeniser {
 
     /**
      * Converts the input to an ordered list of tokens.
-     * @returns The tokens.
+     * @returns The list of tokens.
      */
     tokenise(): Token[] {
         while (this.position < this.input.length) {
@@ -77,23 +77,6 @@ export class Tokeniser {
                 default: {
                     return;
                 }
-            }
-        }
-    }
-
-    /**
-     * Reads a number token.
-     * @param base The base of the number.
-     */
-    private readNumber(base: number = 10): void {
-        let total = 0;
-
-        while (this.position < this.input.length) {
-            const charCode = this.getCharCode();
-            let value: number | undefined;
-
-            if (CharCodes.isDigit(charCode)) {
-                value = charCode - CharCodes.digit0;
             }
         }
     }
