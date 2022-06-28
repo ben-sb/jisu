@@ -3,6 +3,7 @@ import { Program, Statement } from './ast/node';
 
 export class Parser {
     private readonly tokens: Token[];
+    private position: number;
 
     /**
      * Creates a new parser.
@@ -10,6 +11,7 @@ export class Parser {
      */
     constructor(tokens: Token[]) {
         this.tokens = tokens;
+        this.position = 0;
     }
 
     /**
@@ -18,7 +20,7 @@ export class Parser {
      */
     parse(): Program {
         const statements = [];
-        while (this.tokens.length) {
+        while (this.position < this.tokens.length) {
             statements.push(this.parseStatement());
         }
 
@@ -35,7 +37,7 @@ export class Parser {
     private parseStatement(): Statement {
 
         // testing
-        this.tokens.length--;
+        this.position++;
         return {
             type: 'ExpressionStatement',
             expression: {

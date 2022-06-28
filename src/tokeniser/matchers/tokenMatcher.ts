@@ -41,6 +41,10 @@ export const tokenMatchers = [
     basicMatcher(tokenTypes.Number, /^[0-9]+/),
 
     basicMatcher(tokenTypes.Assignment, /^=/),
+    basicMatcher(tokenTypes.LessThanEqual, /^<=/),
+    basicMatcher(tokenTypes.LessThan, /^</),
+    basicMatcher(tokenTypes.GreaterThanEqual, /^>=/),
+    basicMatcher(tokenTypes.GreaterThan, /^>/),
     basicMatcher(tokenTypes.LeftShift, /^<</),
     basicMatcher(tokenTypes.RightShift, /^>>/),
     basicMatcher(tokenTypes.UnsignedRightShift, /^>>>/),
@@ -49,5 +53,7 @@ export const tokenMatchers = [
     basicMatcher(tokenTypes.Multiply, /^\*/),
     basicMatcher(tokenTypes.Divide, /^\//),
     basicMatcher(tokenTypes.Modulus, /^%/),
-    basicMatcher(tokenTypes.Exponential, /^\*\*/)
+    basicMatcher(tokenTypes.Exponential, /^\*\*/),
+    basicMatcher(tokenTypes.LeftBracket, /^\(/),
+    basicMatcher(tokenTypes.RightBracket, /^\)/)
 ];

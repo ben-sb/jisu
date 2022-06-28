@@ -31,6 +31,10 @@ export const tokenTypes: TokenTypes = {
 
     // operator tokens
     Assignment: new TokenType('=', { precedence: 2 }),
+    LessThan: new TokenType('<', { precedence: 10 }),
+    LessThanEqual: new TokenType('<=', { precedence: 10 }),
+    GreaterThan: new TokenType('>', { precedence: 10 }),
+    GreaterThanEqual: new TokenType('>=', { precedence: 10 }),
     LeftShift: new TokenType('<<', { precedence: 11 }),
     RightShift: new TokenType('>>', { precedence: 11 }),
     UnsignedRightShift: new TokenType('>>>', { precedence: 11 }),
@@ -39,5 +43,7 @@ export const tokenTypes: TokenTypes = {
     Multiply: new TokenType('*', { precedence: 13 }),
     Divide: new TokenType('/', { precedence: 13 }),
     Modulus: new TokenType('%', { precedence: 13 }),
-    Exponential: new TokenType('**', { precedence: 14 })
+    Exponential: new TokenType('**', { precedence: 14 }),
+    LeftBracket: new TokenType('(', { precedence: 19 }),
+    RightBracket: new TokenType(')', { precedence: 19 })
 };
