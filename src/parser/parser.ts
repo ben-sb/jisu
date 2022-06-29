@@ -1,6 +1,6 @@
 import { Token } from '../tokeniser/tokens/token';
 import { binaryOperatorTokens, TokenType, tt } from '../tokeniser/tokens/tokenTypes';
-import { Expression, Identifier, Program, SequenceExpression, Statement, VariableDeclaration, VariableDeclarator } from './ast/node';
+import * as t from './ast/types';
 
 export class Parser {
     private readonly tokens: Token[];
@@ -19,16 +19,13 @@ export class Parser {
      * Parses the tokens and returns the outer program node.
      * @returns The program node.
      */
-    parse(): Program {
+    parse(): t.Program {
         const statements = [];
         while (this.position < this.tokens.length && this.peekToken().type != tt.EOF) {
             statements.push(this.parseStatement());
         }
 
-        return {
-            type: 'Program',
-            body: statements
-        };
+        return t.program(statements);
     }
 
     /**
@@ -68,7 +65,7 @@ export class Parser {
      * Parses a single statement.
      * @returns The statement node.
      */
-    private parseStatement(): Statement {
+    private parseStatement(): t.Statement {
         const token = this.peekToken();
         switch (token.type) {
             case tt.Var:
@@ -82,7 +79,7 @@ export class Parser {
      * Parses a variable declaration.
      * @returns The variable declaration node.
      */
-    private parseVariableDeclaration(): VariableDeclaration {
+    private parseVariableDeclaration(): t.VariableDeclaration {
         const kindToken = this.getNextToken(tt.Var);
 
         const declarators = [];
@@ -96,36 +93,28 @@ export class Parser {
             }
         }
 
-        return {
-            type: 'VariableDeclaration',
-            kind: kindToken.value,
-            declarators: declarators
-        };
+        return t.variableDeclaration(kindToken.value, declarators);
     }
 
     /**
      * Parses a variable declarator.
      * @returns The variable declarator node.
      */
-    private parseVariableDeclarator(): VariableDeclarator {
+    private parseVariableDeclarator(): t.VariableDeclarator {
         const identifier = this.parseIdentifier();
 
         this.getNextToken(tt.Assignment);
         
         const expression = this.parseExpression();
 
-        return {
-            type: 'VariableDeclarator',
-            id: identifier,
-            init: expression
-        };
+        return t.variableDeclarator(identifier, expression);
     }
 
     /**
      * Parses an expression.
      * @returns The expression node.
      */
-    private parseExpression(): Expression {
+    private parseExpression(): t.Expression {
         const expression = this.parseExpressionInner();
 
         const nextToken = this.peekToken();
@@ -144,7 +133,7 @@ export class Parser {
      * expressions.
      * @returns The expression node.
      */
-    private parseExpressionInner(): Expression {
+    private parseExpressionInner(): t.Expression {
         const token = this.peekToken();
         switch (token.type) {
             case tt.Identifier:
@@ -158,12 +147,9 @@ export class Parser {
      * Parses an identifier.
      * @returns The identifier node.
      */
-    private parseIdentifier(): Identifier {
+    private parseIdentifier(): t.Identifier {
         const token = this.getNextToken(tt.Identifier);
-        return {
-            type: 'Identifier',
-            name: token.value
-        };
+        return t.identifier(token.value);
     }
 
     /**
@@ -171,7 +157,7 @@ export class Parser {
      * @param firstExpression The first expression in the sequence.
      * @returns The sequence expression node.
      */
-    private parseSequenceExpression(firstExpression: Expression): SequenceExpression {
+    private parseSequenceExpression(firstExpression: t.Expression): t.SequenceExpression {
         const expressions = [firstExpression];
         while (true) {
             const nextExpression = this.parseExpressionInner();
@@ -184,9 +170,6 @@ export class Parser {
             }
         }
 
-        return {
-            type: 'SequenceExpression',
-            expressions
-        };
+        return t.sequenceExpression(expressions);
     }
 }
