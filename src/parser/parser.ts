@@ -80,6 +80,10 @@ export class Parser {
                 return this.parseVariableDeclaration();
             case tt.Function:
                 return this.parseFunction(true) as t.FunctionDeclaration;
+            case tt.LeftBrace:
+                return this.parseBlockStatement();
+            case tt.If:
+                return this.parseIfStatement();
             case tt.Return:
                 return this.parseReturnStatement();
             default:
@@ -181,6 +185,29 @@ export class Parser {
         this.getNextToken(tt.RightBrace);
 
         return t.blockStatement(statements);
+    }
+
+    /**
+     * Parses an if statement.
+     * @returns The if statement node.
+     */
+    private parseIfStatement(): t.IfStatement {
+        this.getNextToken(tt.If);
+        this.getNextToken(tt.LeftParenthesis);
+        
+        const test = this.parseExpression();
+
+        this.getNextToken(tt.RightParenthesis);
+
+        const consequent = this.parseStatement();
+
+        let alternate: t.Statement | undefined;
+        if (this.peekToken().type == tt.Else) {
+            this.getNextToken(tt.Else);
+            alternate = this.parseStatement();
+        }
+
+        return t.ifStatement(test, consequent, alternate);
     }
 
     /**

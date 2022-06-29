@@ -176,7 +176,7 @@ export type IfStatement = Node & {
 export function ifStatement(
     test: Expression, 
     consequent: Statement, 
-    alternate: Statement | null | undefined
+    alternate?: Statement | null
 ): IfStatement {
     return {
         type: 'IfStatement',
