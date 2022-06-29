@@ -112,7 +112,7 @@ export function functionExpression(
 // statements
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | ForStatement | WhileStatement
-    | ReturnStatement | BreakStatement | ContinueStatement 
+    | DoWhileStatement | ReturnStatement | BreakStatement | ContinueStatement 
     | FunctionDeclaration;
 
 export type BlockStatement = Node & {
@@ -227,6 +227,19 @@ export function whileStatement(test: Expression, body: Statement): WhileStatemen
         type: 'WhileStatement',
         test,
         body
+    };
+}
+
+export type DoWhileStatement = Node & {
+    type: 'DoWhileStatement';
+    body: Statement;
+    test: Expression;
+}
+export function doWhileStatement(body: Statement, test: Expression): DoWhileStatement {
+    return {
+        type: 'DoWhileStatement',
+        body,
+        test
     };
 }
 

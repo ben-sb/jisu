@@ -26,6 +26,7 @@ export const tt: TokenTypes = {
     If: new TokenType('if'),
     Break: new TokenType('break'),
     Continue: new TokenType('continue'),
+    Do: new TokenType('do'),
     Else: new TokenType('else'),
     For: new TokenType('for'),
     Return: new TokenType('return'),

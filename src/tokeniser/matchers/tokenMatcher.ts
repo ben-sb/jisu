@@ -193,6 +193,7 @@ export const OTHER_CHARS_KEY = {};
 export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['b', [stringMatcher(tt.Break, 'break')]],
     ['c', [stringMatcher(tt.Continue, 'continue')]],
+    ['d', [stringMatcher(tt.Do, 'do')]],
     ['e', [stringMatcher(tt.Else, 'else')]],
     ['i', [stringMatcher(tt.If, 'if')]],
     ['f', [stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],

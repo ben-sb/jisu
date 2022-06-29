@@ -86,6 +86,10 @@ export class Parser {
                 return this.parseIfStatement();
             case tt.For:
                 return this.parseForStatement();
+            case tt.While:
+                return this.parseWhileStatement();
+            case tt.Do:
+                return this.parseDoWhileStatement();
             case tt.Break:
                 return this.parseBreakStatement();
             case tt.Continue:
@@ -266,6 +270,41 @@ export class Parser {
         const body = this.parseStatement();
 
         return t.forStatement(init, test, update, body);
+    }
+
+    /**
+     * Parses a while statement.
+     * @returns The while statement node.
+     */
+    private parseWhileStatement(): t.WhileStatement {
+        this.getNextToken(tt.While);
+        this.getNextToken(tt.LeftParenthesis);
+
+        const test = this.parseExpression();
+        this.getNextToken(tt.RightParenthesis);
+
+        const body = this.parseStatement();
+
+        return t.whileStatement(test, body);
+    }
+
+    /**
+     * Parses a do while statement.
+     * @returns The do while statement node.
+     */
+    private parseDoWhileStatement(): t.DoWhileStatement {
+        this.getNextToken(tt.Do);
+
+        const body = this.parseStatement();
+
+        this.getNextToken(tt.While);
+        this.getNextToken(tt.LeftParenthesis);
+
+        const test = this.parseExpression();
+        
+        this.getNextToken(tt.RightParenthesis);
+
+        return t.doWhileStatement(body, test);
     }
     
     /**

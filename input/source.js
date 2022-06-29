@@ -1,3 +1,3 @@
-for (var i=0;5;5) {
+while (10) {
     var a = 5;
 }
