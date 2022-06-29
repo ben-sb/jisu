@@ -43,7 +43,7 @@ export class Parser {
             : this.tokens[this.tokens.length - 1]; // EOF token
 
         if (requiredType && token.type != requiredType) {
-            throw new Error(`Unexpected token type ${token.value}, expected type ${requiredType}`);
+            throw new Error(`Unexpected token ${token.value}, expected type ${requiredType}`);
         }
         return token;
     }
@@ -74,7 +74,7 @@ export class Parser {
             case tt.Var:
                 return this.parseVariableDeclaration();
             default:
-                throw new Error(`Unexpected token type ${token.type}`);
+                throw new Error(`Unexpected token ${token.value}`);
         }
     }
 
@@ -150,7 +150,7 @@ export class Parser {
             case tt.Identifier:
                 return this.parseIdentifier();
             default:
-                throw new Error(`Unexpected token type ${token.value}`);
+                throw new Error(`Unexpected token ${token.value}`);
         }
     }
 
