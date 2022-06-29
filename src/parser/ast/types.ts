@@ -16,8 +16,9 @@ export function program(body: Statement[]): Program {
 type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 
 // expressions
-export type Expression = Identifier | NumericLiteral  | UnaryExpression 
-    | BinaryExpression | SequenceExpression | FunctionExpression;
+export type Expression = Identifier | BooleanLiteral | NumericLiteral 
+    | UnaryExpression | BinaryExpression | SequenceExpression 
+    | FunctionExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -37,6 +38,17 @@ export type NumericLiteral = Node & {
 export function numericLiteral(value: number): NumericLiteral {
     return {
         type: 'NumericLiteral',
+        value
+    };
+}
+
+export type BooleanLiteral = Node & {
+    type: 'BooleanLiteral';
+    value: boolean;
+}
+export function booleanLiteral(value: boolean): BooleanLiteral {
+    return {
+        type: 'BooleanLiteral',
         value
     };
 }

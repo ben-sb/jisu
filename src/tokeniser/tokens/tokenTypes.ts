@@ -30,9 +30,11 @@ export const tt: TokenTypes = {
     Default: new TokenType('default'),
     Do: new TokenType('do'),
     Else: new TokenType('else'),
+    False: new TokenType('false'),
     For: new TokenType('for'),
     Return: new TokenType('return'),
     Switch: new TokenType('switch'),
+    True: new TokenType('true'),
     Var: new TokenType('var'),
     While: new TokenType('while'),
 

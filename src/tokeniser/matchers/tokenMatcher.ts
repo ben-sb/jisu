@@ -196,9 +196,10 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['d', [stringMatcher(tt.Default, 'default'), stringMatcher(tt.Do, 'do')]],
     ['e', [stringMatcher(tt.Else, 'else')]],
     ['i', [stringMatcher(tt.If, 'if')]],
-    ['f', [stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],
+    ['f', [stringMatcher(tt.False, 'false'), stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],
     ['r', [stringMatcher(tt.Return, 'return')]],
     ['s', [stringMatcher(tt.Switch, 'switch')]],
+    ['t', [stringMatcher(tt.True, 'true')]],
     ['v', [stringMatcher(tt.Var, 'var')]],
     ['w', [stringMatcher(tt.While, 'while')]],
 

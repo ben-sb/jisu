@@ -42,13 +42,19 @@ export class Parser {
      * @param requiredType The type the token is required to be (optional).
      * @returns The next token.
      */
-    private getNextToken(requiredType?: TokenType): Token {
+    private getNextToken(requiredType?: TokenType | TokenType[]): Token {
         const token = this.position < this.tokens.length
             ? this.tokens[this.advance()]
             : this.tokens[this.tokens.length - 1]; // EOF token
 
         if (requiredType && token.type != requiredType) {
-            throw new Error(`Unexpected token ${token.value}, expected type ${requiredType.name}`);
+            if (Array.isArray(requiredType)) {
+                if (!new Set(requiredType).has(token.type)) {
+                    throw new Error(`Unexpected token ${token.value}, expected type to be one of ${requiredType.map(t => t.name).join(',')}`);
+                }
+            } else if (token.type != requiredType) {
+                throw new Error(`Unexpected token ${token.value}, expected type ${requiredType.name}`);
+            }
         }
         return token;
     }
@@ -424,12 +430,15 @@ export class Parser {
     private parseExpressionInner(): t.Expression {
         const token = this.peekToken();
         switch (token.type) {
+            case tt.Function:
+                return this.parseFunction(false) as t.FunctionExpression;
             case tt.Identifier:
                 return this.parseIdentifier();
             case tt.Number:
                 return this.parseNumericLiteral();
-            case tt.Function:
-                return this.parseFunction(false) as t.FunctionExpression;
+            case tt.True:
+            case tt.False:
+                return this.parseBooleanLiteral();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
         }
@@ -471,6 +480,17 @@ export class Parser {
      */
     private parseNumericLiteral(): t.NumericLiteral {
         const token = this.getNextToken(tt.Number);
-        return t.numericLiteral(token.value);
+        const value = parseInt(token.value);
+        return t.numericLiteral(value);
+    }
+
+    /**
+     * Parses a boolean literal.
+     * @returns The boolean literal node.
+     */
+    private parseBooleanLiteral(): t.BooleanLiteral {
+        const token = this.getNextToken([tt.True, tt.False]);
+        const value = token.type == tt.True;
+        return t.booleanLiteral(value);
     }
 }
