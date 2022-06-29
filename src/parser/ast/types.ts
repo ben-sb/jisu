@@ -110,7 +110,7 @@ export function functionExpression(
 }
 
 // statements
-export type Statement = BlockStatement | ExpressionStatement 
+export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | ForStatement | WhileStatement
     | ReturnStatement | BreakStatement | ContinueStatement 
     | FunctionDeclaration;
@@ -123,6 +123,15 @@ export function blockStatement(body: Statement[]): BlockStatement {
     return {
         type: 'BlockStatement',
         body
+    };
+}
+
+export type EmptyStatement = Node & {
+    type: 'EmptyStatement'
+};
+export function emptyStatement(): EmptyStatement {
+    return {
+        type: 'EmptyStatement'
     };
 }
 

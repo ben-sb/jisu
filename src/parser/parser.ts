@@ -84,14 +84,16 @@ export class Parser {
                 return this.parseFunction(true) as t.FunctionDeclaration;
             case tt.If:
                 return this.parseIfStatement();
-            // case tt.For:
-            //     return this.parseForStatement();
+            case tt.For:
+                return this.parseForStatement();
             case tt.Break:
                 return this.parseBreakStatement();
             case tt.Continue:
                 return this.parseContinueStatement();
             case tt.Return:
                 return this.parseReturnStatement();
+            case tt.SemiColon:
+                return this.parseEmptyStatement();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
         }
@@ -226,12 +228,45 @@ export class Parser {
         return t.ifStatement(test, consequent, alternate);
     }
 
-    /*private parseForStatement(): t.ForStatement {
+    /**
+     * Parses a for statement.
+     * @returns The for statement node.
+     */
+    private parseForStatement(): t.ForStatement {
         this.getNextToken(tt.For);
         this.getNextToken(tt.LeftParenthesis);
 
+        let init: t.VariableDeclaration | t.Expression | null;
+        if (this.peekToken().type == tt.SemiColon) {
+            init = null;
+            this.advance();
+        } else if (this.peekToken().type == tt.Var) {
+            init = this.parseVariableDeclaration();
+        } else {
+            init = this.parseExpression();
+        }
+        this.parseSemiColon();
         
-    }*/
+        let test: t.Expression | null;
+        if (this.peekToken().type == tt.SemiColon) {
+            test = null;
+        } else {
+            test = this.parseExpression();
+        }
+        this.parseSemiColon();
+
+        let update: t.Expression | null;
+        if (this.peekToken().type == tt.RightParenthesis) {
+            update = null;
+        } else {
+            update = this.parseExpression();
+        }
+        this.getNextToken(tt.RightParenthesis);
+        
+        const body = this.parseStatement();
+
+        return t.forStatement(init, test, update, body);
+    }
     
     /**
      * Parses a break statement.
@@ -264,6 +299,15 @@ export class Parser {
 
         this.parseSemiColon();
         return t.returnStatement(expression);
+    }
+
+    /**
+     * Parses an empty statement.
+     * @returns The empty statement node.
+     */
+    private parseEmptyStatement(): t.EmptyStatement {
+        this.parseSemiColon();
+        return t.emptyStatement();
     }
 
     /**
