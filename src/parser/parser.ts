@@ -84,6 +84,8 @@ export class Parser {
                 return this.parseFunction(true) as t.FunctionDeclaration;
             case tt.If:
                 return this.parseIfStatement();
+            // case tt.For:
+            //     return this.parseForStatement();
             case tt.Break:
                 return this.parseBreakStatement();
             case tt.Continue:
@@ -92,6 +94,15 @@ export class Parser {
                 return this.parseReturnStatement();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
+        }
+    }
+
+    /**
+     * Parses an optional semicolon.
+     */
+    private parseSemiColon(): void {
+        if (this.peekToken().type == tt.SemiColon) {
+            this.advance();
         }
     }
 
@@ -113,6 +124,7 @@ export class Parser {
             }
         }
 
+        this.parseSemiColon();
         return t.variableDeclaration(kindToken.value, declarators);
     }
 
@@ -213,6 +225,13 @@ export class Parser {
 
         return t.ifStatement(test, consequent, alternate);
     }
+
+    /*private parseForStatement(): t.ForStatement {
+        this.getNextToken(tt.For);
+        this.getNextToken(tt.LeftParenthesis);
+
+        
+    }*/
     
     /**
      * Parses a break statement.
@@ -220,6 +239,7 @@ export class Parser {
      */
     private parseBreakStatement(): t.BreakStatement {
         this.getNextToken(tt.Break);
+        this.parseSemiColon();
         return t.breakStatement();
     }
 
@@ -229,6 +249,7 @@ export class Parser {
      */
     private parseContinueStatement(): t.ContinueStatement {
         this.getNextToken(tt.Continue);
+        this.parseSemiColon();
         return t.continueStatement();
     }
 
@@ -241,6 +262,7 @@ export class Parser {
 
         const expression = this.parseExpression();
 
+        this.parseSemiColon();
         return t.returnStatement(expression);
     }
 

@@ -1,3 +1,2 @@
-function hello(a,) {
-    
-}
+var a = 5;
+var a = 5;

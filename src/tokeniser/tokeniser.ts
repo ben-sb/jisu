@@ -85,8 +85,7 @@ export class Tokeniser {
                 case CharCodes.space:
                 case CharCodes.carriageReturn:
                 case CharCodes.tab:
-                case CharCodes.lineFeed:
-                case CharCodes.semicolon: {
+                case CharCodes.lineFeed: {
                     this.position++;
                     break;
                 }

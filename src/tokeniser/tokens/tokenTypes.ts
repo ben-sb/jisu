@@ -38,6 +38,7 @@ export const tt: TokenTypes = {
     Function: new TokenType('function'),
     LeftBrace: new TokenType('{'),
     RightBrace: new TokenType('}'),
+    SemiColon: new TokenType(';'),
 
     // operator tokens
     Comma: new TokenType(',', { precedence: 1 }),

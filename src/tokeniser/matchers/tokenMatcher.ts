@@ -215,6 +215,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     [')', [characterMatcher(tt.RightParenthesis, ')')]],
     ['{', [characterMatcher(tt.LeftBrace, '{')]],
     ['}', [characterMatcher(tt.RightBrace, '}')]],
+    [';', [characterMatcher(tt.SemiColon, ';')]],
 
     // matches all other characters
     [OTHER_CHARS_KEY, [
