@@ -29,6 +29,14 @@ export class Parser {
     }
 
     /**
+     * Returns the current position and increments it by 1.
+     * @returns The previous position.
+     */
+    private advance(): number {
+        return this.position++;
+    }
+
+    /**
      * Returns the next token from the token list and increments the
      * current position.
      * @param requiredType The type the token is required to be (optional).
@@ -36,7 +44,7 @@ export class Parser {
      */
     private getNextToken(requiredType?: TokenType): Token {
         const token = this.position < this.tokens.length
-            ? this.tokens[this.position++]
+            ? this.tokens[this.advance()]
             : this.tokens[this.tokens.length - 1]; // EOF token
 
         if (requiredType && token.type != requiredType) {
@@ -68,6 +76,8 @@ export class Parser {
     private parseStatement(): t.Statement {
         const token = this.peekToken();
         switch (token.type) {
+            case tt.Function:
+                return this.parseFunctionDeclaration();
             case tt.Var:
                 return this.parseVariableDeclaration();
             case tt.Return:
@@ -89,7 +99,7 @@ export class Parser {
             declarators.push(this.parseVariableDeclarator());
 
             if (this.peekToken().type == tt.Comma) {
-                this.position++;
+                this.advance();
             } else {
                 break;
             }
@@ -113,11 +123,64 @@ export class Parser {
     }
 
     /**
+     * Parses a function declaration.
+     * @returns The function declaration node.
+     */
+    private parseFunctionDeclaration(): t.FunctionDeclaration {
+        this.getNextToken(tt.Function);
+        
+        const identifier = this.parseIdentifier();
+        const params = this.parseFunctionParams();
+        const body = this.parseBlockStatement();
+
+        return t.functionDeclaration(identifier, params, body);
+    }
+
+    /**
+     * Parses function parameters.
+     * @returns The identifier nodes.
+     */
+    private parseFunctionParams(): t.Identifier[] {
+        this.getNextToken(tt.LeftParenthesis);
+
+        const params = [];
+        while (true) {
+            params.push(this.parseIdentifier());
+            if (this.peekToken().type == tt.Comma) {
+                this.advance();
+            } else {
+                break;
+            }
+        }
+
+        this.getNextToken(tt.RightParenthesis);
+
+        return params;
+    }
+
+    /**
+     * Parses a block statement.
+     * @returns The block statement node.
+     */
+    private parseBlockStatement(): t.BlockStatement {
+        this.getNextToken(tt.LeftBrace);
+
+        const statements = [];
+        while (this.peekToken().type != tt.RightBrace) {
+            statements.push(this.parseStatement());
+        }
+
+        this.getNextToken(tt.RightBrace);
+
+        return t.blockStatement(statements);
+    }
+
+    /**
      * Parses a return statement.
      * @returns The return statement node.
      */
     private parseReturnStatement(): t.ReturnStatement {
-        this.getNextToken(); // return token
+        this.getNextToken(tt.Return);
 
         const expression = this.parseExpression();
 
@@ -135,7 +198,7 @@ export class Parser {
         if (binaryOperatorTokens.has(nextToken.type)) {
             throw new Error('Binary expression parsing not implemented');
         } else if (nextToken.type == tt.Comma) {
-            this.position++;
+            this.advance();
             return this.parseSequenceExpression(expression);
         } else {
             return expression;
@@ -171,7 +234,7 @@ export class Parser {
             expressions.push(nextExpression);
 
             if (this.peekToken().type == tt.Comma) {
-                this.position++;
+                this.advance();
             } else {
                 break;
             }

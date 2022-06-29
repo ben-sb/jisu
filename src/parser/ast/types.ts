@@ -13,6 +13,8 @@ export function program(body: Statement[]): Program {
     };
 }
 
+type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
+
 // expressions
 export type Expression = Identifier | NumericLiteral 
     | UnaryExpression | BinaryExpression | SequenceExpression;
@@ -94,7 +96,8 @@ export function sequenceExpression(expressions: Expression[]): SequenceExpressio
 // statements
 export type Statement = BlockStatement | ExpressionStatement 
     | VariableDeclaration | IfStatement | ForStatement | WhileStatement
-    | ReturnStatement | BreakStatement | ContinueStatement;
+    | ReturnStatement | BreakStatement | ContinueStatement 
+    | FunctionDeclaration;
 
 export type BlockStatement = Node & {
     type: 'BlockStatement';
@@ -228,5 +231,29 @@ export type ContinueStatement = Node & {
 export function continueStatement(): ContinueStatement {
     return {
         type: 'ContinueStatement'
+    };
+}
+
+export type Function = Node & {
+    type: 'Function',
+    id: Identifier | null;
+    params: Identifier[];
+    body: BlockStatement;
+}
+
+export type FunctionDeclaration = OmitType<Function> & {
+    type: 'FunctionDeclaration';
+    id: Identifier;
+}
+export function functionDeclaration(
+    id: Identifier, 
+    params: Identifier[],
+    body: BlockStatement
+): FunctionDeclaration {
+    return {
+        type: 'FunctionDeclaration',
+        id,
+        params,
+        body
     };
 }
