@@ -76,14 +76,18 @@ export class Parser {
     private parseStatement(): t.Statement {
         const token = this.peekToken();
         switch (token.type) {
+            case tt.LeftBrace:
+                return this.parseBlockStatement();
             case tt.Var:
                 return this.parseVariableDeclaration();
             case tt.Function:
                 return this.parseFunction(true) as t.FunctionDeclaration;
-            case tt.LeftBrace:
-                return this.parseBlockStatement();
             case tt.If:
                 return this.parseIfStatement();
+            case tt.Break:
+                return this.parseBreakStatement();
+            case tt.Continue:
+                return this.parseContinueStatement();
             case tt.Return:
                 return this.parseReturnStatement();
             default:
@@ -208,6 +212,24 @@ export class Parser {
         }
 
         return t.ifStatement(test, consequent, alternate);
+    }
+    
+    /**
+     * Parses a break statement.
+     * @returns The break statement node.
+     */
+    private parseBreakStatement(): t.BreakStatement {
+        this.getNextToken(tt.Break);
+        return t.breakStatement();
+    }
+
+    /**
+     * Parses a continue statement.
+     * @returns The continue statement node.
+     */
+    private parseContinueStatement(): t.ContinueStatement {
+        this.getNextToken(tt.Continue);
+        return t.continueStatement();
     }
 
     /**
