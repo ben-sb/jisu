@@ -1,1 +1,1 @@
-var a = a, b, c;
+return 5, a, b, c, 20;

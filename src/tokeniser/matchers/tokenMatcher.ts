@@ -196,6 +196,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['e', [stringMatcher(tt.Else, 'else')]],
     ['i', [stringMatcher(tt.If, 'if')]],
     ['f', [stringMatcher(tt.For, 'for')]],
+    ['r', [stringMatcher(tt.Return, 'return')]],
     ['v', [stringMatcher(tt.Var, 'var')]],
     ['w', [stringMatcher(tt.While, 'while')]],
 

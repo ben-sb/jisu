@@ -70,6 +70,8 @@ export class Parser {
         switch (token.type) {
             case tt.Var:
                 return this.parseVariableDeclaration();
+            case tt.Return:
+                return this.parseReturnStatement();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
         }
@@ -111,6 +113,18 @@ export class Parser {
     }
 
     /**
+     * Parses a return statement.
+     * @returns The return statement node.
+     */
+    private parseReturnStatement(): t.ReturnStatement {
+        this.getNextToken(); // return token
+
+        const expression = this.parseExpression();
+
+        return t.returnStatement(expression);
+    }
+
+    /**
      * Parses an expression.
      * @returns The expression node.
      */
@@ -138,18 +152,11 @@ export class Parser {
         switch (token.type) {
             case tt.Identifier:
                 return this.parseIdentifier();
+            case tt.Number:
+                return this.parseNumericLiteral();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
         }
-    }
-
-    /**
-     * Parses an identifier.
-     * @returns The identifier node.
-     */
-    private parseIdentifier(): t.Identifier {
-        const token = this.getNextToken(tt.Identifier);
-        return t.identifier(token.value);
     }
 
     /**
@@ -171,5 +178,23 @@ export class Parser {
         }
 
         return t.sequenceExpression(expressions);
+    }
+
+    /**
+     * Parses an identifier.
+     * @returns The identifier node.
+     */
+    private parseIdentifier(): t.Identifier {
+        const token = this.getNextToken(tt.Identifier);
+        return t.identifier(token.value);
+    }
+
+    /**
+     * Parses a numeric literal.
+     * @returns The numeric literal node.
+     */
+    private parseNumericLiteral(): t.NumericLiteral {
+        const token = this.getNextToken(tt.Number);
+        return t.numericLiteral(token.value);
     }
 }

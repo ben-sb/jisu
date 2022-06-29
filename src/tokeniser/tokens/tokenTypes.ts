@@ -59,6 +59,8 @@ export const tt: TokenTypes = {
     RightParenthesis: new TokenType(')', { precedence: 19 })
 };
 
+// TODO: add unary operators
+
 // TODO: add rest of binary operators
 export const binaryOperatorTokens: Set<TokenType> = new Set([
     tt.LessThan, tt.LessThanEqual, tt.GreaterThan,
