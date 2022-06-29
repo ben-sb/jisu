@@ -9,7 +9,7 @@ export type Program = Node & {
 
 // expressions
 export type Expression = Identifier | NumericLiteral 
-    | UnaryExpression | BinaryExpression;
+    | UnaryExpression | BinaryExpression | SequenceExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -38,6 +38,11 @@ export type BinaryExpression = Node & {
     operator: BinaryOperator;
     left: Expression;
     right: Expression;
+}
+
+export type SequenceExpression = Node & {
+    type: 'SequenceExpression';
+    expressions: Expression[];
 }
 
 // statements

@@ -1,5 +1,5 @@
 import { Token } from '../tokens/token';
-import { TokenType, tokenTypes } from '../tokens/tokenTypes';
+import { TokenType, tt } from '../tokens/tokenTypes';
 
 export interface MatchSuccess {
     matched: true;
@@ -92,19 +92,19 @@ const matchLeftArrowTokens = (input: string): TokenMatchResult => {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tokenTypes.LeftShift, '<<')
+                token: new Token(tt.LeftShift, '<<')
             };
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tokenTypes.LessThanEqual, '<=')
+                token: new Token(tt.LessThanEqual, '<=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tokenTypes.LessThan, '<')
+                token: new Token(tt.LessThan, '<')
             };
         }
     } else {
@@ -127,26 +127,26 @@ const matchRightArrowTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tokenTypes.UnsignedRightShift, '>>>')
+                    token: new Token(tt.UnsignedRightShift, '>>>')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tokenTypes.RightShift, '>>')
+                    token: new Token(tt.RightShift, '>>')
                 };
             }
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tokenTypes.GreaterThanEqual, '>=')
+                token: new Token(tt.GreaterThanEqual, '>=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tokenTypes.GreaterThan, '>')
+                token: new Token(tt.GreaterThan, '>')
             };
         }
     } else {
@@ -167,13 +167,13 @@ const matchStarTokens = (input: string): TokenMatchResult => {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tokenTypes.Exponential, '**')
+                token: new Token(tt.Exponential, '**')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tokenTypes.Multiply, '*')
+                token: new Token(tt.Multiply, '*')
             };
         }
     } else {
@@ -191,30 +191,31 @@ export const OTHER_CHARS_KEY = {};
  * Allows for more efficient token matching.
  */
 export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
-    ['b', [stringMatcher(tokenTypes.Break, 'break')]],
-    ['c', [stringMatcher(tokenTypes.Continue, 'continue')]],
-    ['e', [stringMatcher(tokenTypes.Else, 'else')]],
-    ['i', [stringMatcher(tokenTypes.If, 'if')]],
-    ['f', [stringMatcher(tokenTypes.For, 'for')]],
-    ['v', [stringMatcher(tokenTypes.Var, 'var')]],
-    ['w', [stringMatcher(tokenTypes.While, 'while')]],
+    ['b', [stringMatcher(tt.Break, 'break')]],
+    ['c', [stringMatcher(tt.Continue, 'continue')]],
+    ['e', [stringMatcher(tt.Else, 'else')]],
+    ['i', [stringMatcher(tt.If, 'if')]],
+    ['f', [stringMatcher(tt.For, 'for')]],
+    ['v', [stringMatcher(tt.Var, 'var')]],
+    ['w', [stringMatcher(tt.While, 'while')]],
 
     ['<', [matchLeftArrowTokens]],
     ['>', [matchRightArrowTokens]],
     ['*', [matchStarTokens]],
-    ['=', [characterMatcher(tokenTypes.Assignment, '=')]],
-    ['+', [characterMatcher(tokenTypes.Add, '+')]],
-    ['-', [characterMatcher(tokenTypes.Subtract, '-')]],
-    ['/', [characterMatcher(tokenTypes.Divide, '/')]],
-    ['%', [characterMatcher(tokenTypes.Modulus, '%')]],
-    ['[', [characterMatcher(tokenTypes.LeftBracket, '[')]],
-    [']', [characterMatcher(tokenTypes.RightBracket, ']')]],
-    ['(', [characterMatcher(tokenTypes.LeftParenthesis, '(')]],
-    [')', [characterMatcher(tokenTypes.RightParenthesis, ')')]],
+    [',', [characterMatcher(tt.Comma, ',')]],
+    ['=', [characterMatcher(tt.Assignment, '=')]],
+    ['+', [characterMatcher(tt.Add, '+')]],
+    ['-', [characterMatcher(tt.Subtract, '-')]],
+    ['/', [characterMatcher(tt.Divide, '/')]],
+    ['%', [characterMatcher(tt.Modulus, '%')]],
+    ['[', [characterMatcher(tt.LeftBracket, '[')]],
+    [']', [characterMatcher(tt.RightBracket, ']')]],
+    ['(', [characterMatcher(tt.LeftParenthesis, '(')]],
+    [')', [characterMatcher(tt.RightParenthesis, ')')]],
 
     // matches all other characters
     [OTHER_CHARS_KEY, [
-        regexMatcher(tokenTypes.Identifier, /^[a-zA-Z_$][a-zA-Z0-9_$]*/),
-        regexMatcher(tokenTypes.Number, /^[0-9]+/)
+        regexMatcher(tt.Identifier, /^[a-zA-Z_$][a-zA-Z0-9_$]*/),
+        regexMatcher(tt.Number, /^[0-9]+/)
     ]],
 ]);

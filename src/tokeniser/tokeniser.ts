@@ -1,7 +1,7 @@
 import * as CharCodes from 'charcodes';
 import { Token } from './tokens/token';
 import { matcherMap, MatchSuccess, OTHER_CHARS_KEY, TokenMatcher } from './matchers/tokenMatcher';
-import { tokenTypes } from './tokens/tokenTypes';
+import { tt } from './tokens/tokenTypes';
 
 export class Tokeniser {
     private readonly tokens: Token[];
@@ -62,7 +62,7 @@ export class Tokeniser {
             this.readWhitespace();
         }
 
-        this.tokens.push(new Token(tokenTypes.EOF, null));
+        this.tokens.push(new Token(tt.EOF, null));
         return this.tokens;
     }
 

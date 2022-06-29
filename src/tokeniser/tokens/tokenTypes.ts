@@ -19,7 +19,7 @@ interface TokenOptions {
 
 type TokenTypes = { [name: string]: TokenType };
 
-export const tokenTypes: TokenTypes = {
+export const tt: TokenTypes = {
     EOF: new TokenType('eof'),
 
     // keywords
@@ -57,3 +57,12 @@ export const tokenTypes: TokenTypes = {
     LeftParenthesis: new TokenType('(', { precedence: 19 }),
     RightParenthesis: new TokenType(')', { precedence: 19 })
 };
+
+// TODO: add rest of binary operators
+export const binaryOperatorTokens: Set<TokenType> = new Set([
+    tt.LessThan, tt.LessThanEqual, tt.GreaterThan,
+    tt.GreaterThanEqual, tt.LeftShift, tt.RightShift,
+    tt.UnsignedRightShift, tt.Add, tt.Subtract,
+    tt.Multiply, tt.Divide, tt.Modulus,
+    tt.Exponential
+]);

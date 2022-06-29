@@ -1,6 +1,6 @@
 import { Token } from '../tokeniser/tokens/token';
-import { TokenType, tokenTypes } from '../tokeniser/tokens/tokenTypes';
-import { Expression, Identifier, Program, Statement, VariableDeclaration, VariableDeclarator } from './ast/node';
+import { binaryOperatorTokens, TokenType, tt } from '../tokeniser/tokens/tokenTypes';
+import { Expression, Identifier, Program, SequenceExpression, Statement, VariableDeclaration, VariableDeclarator } from './ast/node';
 
 export class Parser {
     private readonly tokens: Token[];
@@ -21,7 +21,7 @@ export class Parser {
      */
     parse(): Program {
         const statements = [];
-        while (this.position < this.tokens.length && this.peekToken().type != tokenTypes.EOF) {
+        while (this.position < this.tokens.length && this.peekToken().type != tt.EOF) {
             statements.push(this.parseStatement());
         }
 
@@ -43,7 +43,7 @@ export class Parser {
             : this.tokens[this.tokens.length - 1]; // EOF token
 
         if (requiredType && token.type != requiredType) {
-            throw new Error(`Unexpected token type ${token.type}, expected type ${requiredType}`);
+            throw new Error(`Unexpected token type ${token.value}, expected type ${requiredType}`);
         }
         return token;
     }
@@ -71,7 +71,7 @@ export class Parser {
     private parseStatement(): Statement {
         const token = this.peekToken();
         switch (token.type) {
-            case tokenTypes.Var:
+            case tt.Var:
                 return this.parseVariableDeclaration();
             default:
                 throw new Error(`Unexpected token type ${token.type}`);
@@ -83,13 +83,13 @@ export class Parser {
      * @returns The variable declaration node.
      */
     private parseVariableDeclaration(): VariableDeclaration {
-        const kindToken = this.getNextToken(tokenTypes.Var);
+        const kindToken = this.getNextToken(tt.Var);
 
         const declarators = [];
         while (true) {
             declarators.push(this.parseVariableDeclarator());
 
-            if (this.peekToken().type == tokenTypes.Comma) {
+            if (this.peekToken().type == tt.Comma) {
                 this.position++;
             } else {
                 break;
@@ -110,7 +110,7 @@ export class Parser {
     private parseVariableDeclarator(): VariableDeclarator {
         const identifier = this.parseIdentifier();
 
-        this.getNextToken(tokenTypes.Assignment);
+        this.getNextToken(tt.Assignment);
         
         const expression = this.parseExpression();
 
@@ -126,12 +126,31 @@ export class Parser {
      * @returns The expression node.
      */
     private parseExpression(): Expression {
+        const expression = this.parseExpressionInner();
+
+        const nextToken = this.peekToken();
+        if (binaryOperatorTokens.has(nextToken.type)) {
+            throw new Error('Binary expression parsing not implemented');
+        } else if (nextToken.type == tt.Comma) {
+            this.position++;
+            return this.parseSequenceExpression(expression);
+        } else {
+            return expression;
+        }
+    }
+
+    /**
+     * Parses an expression that is known not to be a series of chained
+     * expressions.
+     * @returns The expression node.
+     */
+    private parseExpressionInner(): Expression {
         const token = this.peekToken();
         switch (token.type) {
-            case tokenTypes.Identifier:
+            case tt.Identifier:
                 return this.parseIdentifier();
             default:
-                throw new Error(`Unexpected token type ${token.type}`);
+                throw new Error(`Unexpected token type ${token.value}`);
         }
     }
 
@@ -140,10 +159,34 @@ export class Parser {
      * @returns The identifier node.
      */
     private parseIdentifier(): Identifier {
-        const token = this.getNextToken(tokenTypes.Identifier);
+        const token = this.getNextToken(tt.Identifier);
         return {
             type: 'Identifier',
             name: token.value
+        };
+    }
+
+    /**
+     * Parses a sequence expression.
+     * @param firstExpression The first expression in the sequence.
+     * @returns The sequence expression node.
+     */
+    private parseSequenceExpression(firstExpression: Expression): SequenceExpression {
+        const expressions = [firstExpression];
+        while (true) {
+            const nextExpression = this.parseExpressionInner();
+            expressions.push(nextExpression);
+
+            if (this.peekToken().type == tt.Comma) {
+                this.position++;
+            } else {
+                break;
+            }
+        }
+
+        return {
+            type: 'SequenceExpression',
+            expressions
         };
     }
 }
