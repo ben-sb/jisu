@@ -84,6 +84,8 @@ export class Parser {
                 return this.parseFunction(true) as t.FunctionDeclaration;
             case tt.If:
                 return this.parseIfStatement();
+            case tt.Switch:
+                return this.parseSwitchStatement();
             case tt.For:
                 return this.parseForStatement();
             case tt.While:
@@ -143,7 +145,7 @@ export class Parser {
 
         this.getNextToken(tt.Assignment);
         
-        const expression = this.parseExpression();
+        const expression = this.parseExpression(false);
 
         return t.variableDeclarator(identifier, expression);
     }
@@ -230,6 +232,52 @@ export class Parser {
         }
 
         return t.ifStatement(test, consequent, alternate);
+    }
+
+    /**
+     * Parses a switch statement.
+     * @returns The switch statement node.
+     */
+    private parseSwitchStatement(): t.SwitchStatement {
+        this.getNextToken(tt.Switch);
+        this.getNextToken(tt.LeftParenthesis);
+
+        const discriminant = this.parseExpression();
+
+        this.getNextToken(tt.RightParenthesis);
+        this.getNextToken(tt.LeftBrace);
+
+        const cases = [];
+        while (this.peekToken().type != tt.RightBrace) {
+            cases.push(this.parseSwitchCase());
+        }
+
+        this.getNextToken(tt.RightBrace);
+
+        return t.switchStatement(discriminant, cases);
+    }
+
+    /**
+     * Parses a switch case.
+     * @returns The switch case node.
+     */
+    private parseSwitchCase(): t.SwitchCase {
+        let test: t.Expression | null;
+        if (this.peekToken().type == tt.Default) {
+            test = null;
+            this.advance();
+        } else {
+            this.getNextToken(tt.Case);
+            test = this.parseExpression();
+        }
+        this.getNextToken(tt.Colon);
+
+        const consequent = [this.parseStatement()];
+        while (this.peekToken().type != tt.Case && this.peekToken().type != tt.Default && this.peekToken().type != tt.RightBrace) {
+            consequent.push(this.parseStatement());
+        }
+
+        return t.switchCase(test, consequent);
     }
 
     /**
@@ -351,15 +399,16 @@ export class Parser {
 
     /**
      * Parses an expression.
+     * @param canBeSequence Whether it can be a sequence expression (defaults to true).
      * @returns The expression node.
      */
-    private parseExpression(): t.Expression {
+    private parseExpression(canBeSequence: boolean = true): t.Expression {
         const expression = this.parseExpressionInner();
 
         const nextToken = this.peekToken();
         if (binaryOperatorTokens.has(nextToken.type)) {
             throw new Error('Binary expression parsing not implemented');
-        } else if (nextToken.type == tt.Comma) {
+        } else if (canBeSequence && nextToken.type == tt.Comma) {
             this.advance();
             return this.parseSequenceExpression(expression);
         } else {

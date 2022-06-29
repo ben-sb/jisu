@@ -25,11 +25,14 @@ export const tt: TokenTypes = {
     // keywords
     If: new TokenType('if'),
     Break: new TokenType('break'),
+    Case: new TokenType('case'),
     Continue: new TokenType('continue'),
+    Default: new TokenType('default'),
     Do: new TokenType('do'),
     Else: new TokenType('else'),
     For: new TokenType('for'),
     Return: new TokenType('return'),
+    Switch: new TokenType('switch'),
     Var: new TokenType('var'),
     While: new TokenType('while'),
 
@@ -39,6 +42,7 @@ export const tt: TokenTypes = {
     Function: new TokenType('function'),
     LeftBrace: new TokenType('{'),
     RightBrace: new TokenType('}'),
+    Colon: new TokenType(':'),
     SemiColon: new TokenType(';'),
 
     // operator tokens

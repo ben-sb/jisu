@@ -192,12 +192,13 @@ export const OTHER_CHARS_KEY = {};
  */
 export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['b', [stringMatcher(tt.Break, 'break')]],
-    ['c', [stringMatcher(tt.Continue, 'continue')]],
-    ['d', [stringMatcher(tt.Do, 'do')]],
+    ['c', [stringMatcher(tt.Case, 'case'), stringMatcher(tt.Continue, 'continue')]],
+    ['d', [stringMatcher(tt.Default, 'default'), stringMatcher(tt.Do, 'do')]],
     ['e', [stringMatcher(tt.Else, 'else')]],
     ['i', [stringMatcher(tt.If, 'if')]],
     ['f', [stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],
     ['r', [stringMatcher(tt.Return, 'return')]],
+    ['s', [stringMatcher(tt.Switch, 'switch')]],
     ['v', [stringMatcher(tt.Var, 'var')]],
     ['w', [stringMatcher(tt.While, 'while')]],
 
@@ -216,6 +217,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     [')', [characterMatcher(tt.RightParenthesis, ')')]],
     ['{', [characterMatcher(tt.LeftBrace, '{')]],
     ['}', [characterMatcher(tt.RightBrace, '}')]],
+    [':', [characterMatcher(tt.Colon, ':')]],
     [';', [characterMatcher(tt.SemiColon, ';')]],
 
     // matches all other characters

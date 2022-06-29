@@ -111,9 +111,9 @@ export function functionExpression(
 
 // statements
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
-    | VariableDeclaration | IfStatement | ForStatement | WhileStatement
-    | DoWhileStatement | ReturnStatement | BreakStatement | ContinueStatement 
-    | FunctionDeclaration;
+    | VariableDeclaration | IfStatement | SwitchStatement | ForStatement 
+    | WhileStatement | DoWhileStatement | ReturnStatement | BreakStatement 
+    | ContinueStatement | FunctionDeclaration;
 
 export type BlockStatement = Node & {
     type: 'BlockStatement';
@@ -192,6 +192,38 @@ export function ifStatement(
         test,
         consequent,
         alternate: alternate || null
+    };
+}
+
+export type SwitchStatement = Node & {
+    type: 'SwitchStatement';
+    discriminant: Expression;
+    cases: SwitchCase[];
+}
+export function switchStatement(
+    discriminant: Expression, 
+    cases: SwitchCase[]
+): SwitchStatement {
+    return {
+        type: 'SwitchStatement',
+        discriminant,
+        cases
+    };
+}
+
+export type SwitchCase = Node & {
+    type: 'SwitchCase';
+    test: Expression | null;
+    consequent: Statement[];
+}
+export function switchCase(
+    test: Expression | null | undefined, 
+    consequent: Statement[]
+): SwitchCase {
+    return {
+        type: 'SwitchCase',
+        test: test || null,
+        consequent
     };
 }
 
