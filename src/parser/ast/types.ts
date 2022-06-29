@@ -46,7 +46,10 @@ export type UnaryExpression = Node & {
     operator: UnaryOperator;
     argument: Expression;
 }
-export function unaryExpression(operator: UnaryOperator, argument: Expression): UnaryExpression {
+export function unaryExpression(
+    operator: UnaryOperator, 
+    argument: Expression
+): UnaryExpression {
     return {
         type: 'UnaryExpression',
         operator,
@@ -64,7 +67,11 @@ export type BinaryExpression = Node & {
     left: Expression;
     right: Expression;
 }
-export function binaryExpression(operator: BinaryOperator, left: Expression, right: Expression): BinaryExpression {
+export function binaryExpression(
+    operator: BinaryOperator, 
+    left: Expression, 
+    right: Expression
+): BinaryExpression {
     return {
         type: 'BinaryExpression',
         operator,
@@ -129,7 +136,10 @@ export type VariableDeclaration = Node & {
     kind: VariableDeclarationKind;
     declarators: VariableDeclarator[];
 }
-export function variableDeclaration(kind: VariableDeclarationKind, declarators: VariableDeclarator[]): VariableDeclaration {
+export function variableDeclaration(
+    kind: VariableDeclarationKind, 
+    declarators: VariableDeclarator[]
+): VariableDeclaration {
     return {
         type: 'VariableDeclaration',
         kind,
@@ -143,11 +153,50 @@ export type IfStatement = Node & {
     consequent: Statement;
     alternate?: Statement;
 }
-export function ifStatement(test: Expression, consequent: Statement, alternate?: Statement): IfStatement {
+export function ifStatement(
+    test: Expression, 
+    consequent: Statement, 
+    alternate?: Statement
+): IfStatement {
     return {
         type: 'IfStatement',
         test,
         consequent,
         alternate
+    };
+}
+
+export type ForStatement = Node & {
+    type: 'ForStatement';
+    init: VariableDeclaration | Expression | null;
+    test: Expression | null;
+    update: Expression | null;
+    body: Statement;
+}
+export function forStatement(
+    init: VariableDeclaration | Expression | null | undefined,
+    test: Expression | null | undefined,
+    update: Expression | null | undefined,
+    body: Statement
+): ForStatement {
+    return {
+        type: 'ForStatement',
+        init: init || null,
+        test: test || null,
+        update: update || null,
+        body
+    };
+}
+
+export type WhileStatement = Node & {
+    type: 'WhileStatement';
+    test: Expression;
+    body: Statement;
+}
+export function whileStatement(test: Expression, body: Statement): WhileStatement {
+    return {
+        type: 'WhileStatement',
+        test,
+        body
     };
 }
