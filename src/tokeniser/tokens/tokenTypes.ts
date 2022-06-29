@@ -28,6 +28,7 @@ export const tt: TokenTypes = {
     Continue: new TokenType('continue'),
     Else: new TokenType('else'),
     For: new TokenType('for'),
+    Return: new TokenType('return'),
     Var: new TokenType('var'),
     While: new TokenType('while'),
 

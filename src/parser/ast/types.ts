@@ -93,7 +93,8 @@ export function sequenceExpression(expressions: Expression[]): SequenceExpressio
 
 // statements
 export type Statement = BlockStatement | ExpressionStatement 
-    | VariableDeclaration | IfStatement;
+    | VariableDeclaration | IfStatement | ForStatement | WhileStatement
+    | ReturnStatement | BreakStatement | ContinueStatement;
 
 export type BlockStatement = Node & {
     type: 'BlockStatement';
@@ -151,18 +152,18 @@ export type IfStatement = Node & {
     type: 'IfStatement';
     test: Expression;
     consequent: Statement;
-    alternate?: Statement;
+    alternate: Statement | null;
 }
 export function ifStatement(
     test: Expression, 
     consequent: Statement, 
-    alternate?: Statement
+    alternate: Statement | null | undefined
 ): IfStatement {
     return {
         type: 'IfStatement',
         test,
         consequent,
-        alternate
+        alternate: alternate || null
     };
 }
 
@@ -198,5 +199,34 @@ export function whileStatement(test: Expression, body: Statement): WhileStatemen
         type: 'WhileStatement',
         test,
         body
+    };
+}
+
+export type ReturnStatement = Node & {
+    type: 'ReturnStatement';
+    argument: Expression | null;
+}
+export function returnStatement(argument: Expression | null | undefined): ReturnStatement {
+    return {
+        type: 'ReturnStatement',
+        argument: argument || null
+    };
+}
+
+export type BreakStatement = Node & {
+    type: 'BreakStatement';
+}
+export function breakStatement(): BreakStatement {
+    return {
+        type: 'BreakStatement'
+    };
+}
+
+export type ContinueStatement = Node & {
+    type: 'ContinueStatement';
+}
+export function continueStatement(): ContinueStatement {
+    return {
+        type: 'ContinueStatement'
     };
 }
