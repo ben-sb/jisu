@@ -1,6 +1,6 @@
 import * as CharCodes from 'charcodes';
 import { Token } from './tokens/token';
-import { tokenMatchers } from './matchers/tokenMatcher';
+import { matcherMap, MatchSuccess, OTHER_CHARS_KEY, TokenMatcher } from './matchers/tokenMatcher';
 import { tokenTypes } from './tokens/tokenTypes';
 
 export class Tokeniser {
@@ -27,21 +27,38 @@ export class Tokeniser {
             this.readWhitespace();
 
             const inputStr = this.input.substring(this.position);
-            let matched = false;
+            const nextChar = this.input.charAt(this.position);
+            let matchResult: MatchSuccess | undefined;
             
-            for (const matcher of tokenMatchers) {
-                const result = matcher(inputStr);
-                if (result.matched) {
-                    this.tokens.push(result.token);
-                    this.position += result.length;
-                    matched = true;
-                    break;
+            if (matcherMap.has(nextChar)) {
+                const matchers = matcherMap.get(nextChar) as TokenMatcher[];
+                for (const matcher of matchers) {
+                    const result = matcher(inputStr);
+                    if (result.matched) {
+                        matchResult = result;
+                        break;
+                    }
                 }
             }
 
-            if (!matched) {
+            if (!matchResult) {
+                const matchers = matcherMap.get(OTHER_CHARS_KEY) as TokenMatcher[];
+                for (const matcher of matchers) {
+                    const result = matcher(inputStr);
+                    if (result.matched) {
+                        matchResult = result;
+                        break;
+                    }
+                }
+            }
+            
+            if (matchResult) {
+                this.tokens.push(matchResult.token);
+                this.position += matchResult.length;
+            } else {
                 throw new Error(`Unable to match input ${inputStr}`);
             }
+
             this.readWhitespace();
         }
 

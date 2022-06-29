@@ -1,17 +1,17 @@
 import { Token } from '../tokens/token';
 import { TokenType, tokenTypes } from '../tokens/tokenTypes';
 
-interface MatchSuccess {
+export interface MatchSuccess {
     matched: true;
     length: number;
     token: Token;
 }
 
-interface MatchFailure {
+export interface MatchFailure {
     matched: false;
 }
 
-type TokenMatchResult = MatchSuccess | MatchFailure;
+export type TokenMatchResult = MatchSuccess | MatchFailure;
 
 export type TokenMatcher = (input: string) => TokenMatchResult;
 
@@ -156,23 +156,65 @@ const matchRightArrowTokens = (input: string): TokenMatchResult => {
     }
 };
 
-export const tokenMatchers = [
-    stringMatcher(tokenTypes.Var, 'var'),
-    regexMatcher(tokenTypes.Identifier, /^[a-zA-Z_$][a-zA-Z0-9_$]*/),
+/**
+ * Matches all tokens that start with '*'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchStarTokens = (input: string): TokenMatchResult => {
+    if (input.charAt(0) == '*') {
+        if (input.charAt(1) == '*') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tokenTypes.Exponential, '**')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tokenTypes.Multiply, '*')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+}
 
-    regexMatcher(tokenTypes.Number, /^[0-9]+/),
+// used as key for all other characters in matcher map
+export const OTHER_CHARS_KEY = {};
 
-    matchLeftArrowTokens,
-    matchRightArrowTokens,
+/**
+ * Map of token matchers grouped by the first char they match.
+ * Allows for more efficient token matching.
+ */
+export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
+    ['b', [stringMatcher(tokenTypes.Break, 'break')]],
+    ['c', [stringMatcher(tokenTypes.Continue, 'continue')]],
+    ['e', [stringMatcher(tokenTypes.Else, 'else')]],
+    ['i', [stringMatcher(tokenTypes.If, 'if')]],
+    ['f', [stringMatcher(tokenTypes.For, 'for')]],
+    ['v', [stringMatcher(tokenTypes.Var, 'var')]],
+    ['w', [stringMatcher(tokenTypes.While, 'while')]],
 
-    characterMatcher(tokenTypes.Comma, ','),
-    characterMatcher(tokenTypes.Assignment, '='),
-    characterMatcher(tokenTypes.Add, '+'),
-    characterMatcher(tokenTypes.Subtract, '-'),
-    characterMatcher(tokenTypes.Multiply, '*'),
-    characterMatcher(tokenTypes.Divide, '/'),
-    characterMatcher(tokenTypes.Modulus, '%'),
-    stringMatcher(tokenTypes.Exponential, '**'),
-    characterMatcher(tokenTypes.LeftBracket, '('),
-    characterMatcher(tokenTypes.RightBracket, ')')
-];
+    ['<', [matchLeftArrowTokens]],
+    ['>', [matchRightArrowTokens]],
+    ['*', [matchStarTokens]],
+    ['=', [characterMatcher(tokenTypes.Assignment, '=')]],
+    ['+', [characterMatcher(tokenTypes.Add, '+')]],
+    ['-', [characterMatcher(tokenTypes.Subtract, '-')]],
+    ['/', [characterMatcher(tokenTypes.Divide, '/')]],
+    ['%', [characterMatcher(tokenTypes.Modulus, '%')]],
+    ['[', [characterMatcher(tokenTypes.LeftBracket, '[')]],
+    [']', [characterMatcher(tokenTypes.RightBracket, ']')]],
+    ['(', [characterMatcher(tokenTypes.LeftParenthesis, '(')]],
+    [')', [characterMatcher(tokenTypes.RightParenthesis, ')')]],
+
+    // matches all other characters
+    [OTHER_CHARS_KEY, [
+        regexMatcher(tokenTypes.Identifier, /^[a-zA-Z_$][a-zA-Z0-9_$]*/),
+        regexMatcher(tokenTypes.Number, /^[0-9]+/)
+    ]],
+]);

@@ -23,7 +23,14 @@ export const tokenTypes: TokenTypes = {
     EOF: new TokenType('eof'),
 
     // keywords
+    If: new TokenType('if'),
+    Break: new TokenType('break'),
+    Continue: new TokenType('continue'),
+    Else: new TokenType('else'),
+    For: new TokenType('for'),
     Var: new TokenType('var'),
+    While: new TokenType('while'),
+
     Identifier: new TokenType('identifier'),
 
     // types
@@ -45,6 +52,8 @@ export const tokenTypes: TokenTypes = {
     Divide: new TokenType('/', { precedence: 13 }),
     Modulus: new TokenType('%', { precedence: 13 }),
     Exponential: new TokenType('**', { precedence: 14 }),
-    LeftBracket: new TokenType('(', { precedence: 19 }),
-    RightBracket: new TokenType(')', { precedence: 19 })
+    LeftBracket: new TokenType('[', { precedence: 18 }),
+    RightBracket: new TokenType(']', { precedence: 18 }),
+    LeftParenthesis: new TokenType('(', { precedence: 19 }),
+    RightParenthesis: new TokenType(')', { precedence: 19 })
 };
