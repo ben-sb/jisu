@@ -1,1 +1,1 @@
-var a = a, b = b;
+var a = a;
