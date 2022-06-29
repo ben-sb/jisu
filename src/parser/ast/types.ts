@@ -16,8 +16,8 @@ export function program(body: Statement[]): Program {
 type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 
 // expressions
-export type Expression = Identifier | NumericLiteral 
-    | UnaryExpression | BinaryExpression | SequenceExpression;
+export type Expression = Identifier | NumericLiteral  | UnaryExpression 
+    | BinaryExpression | SequenceExpression | FunctionExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -90,6 +90,22 @@ export function sequenceExpression(expressions: Expression[]): SequenceExpressio
     return {
         type: 'SequenceExpression',
         expressions
+    };
+}
+
+export type FunctionExpression = OmitType<Function> & {
+    type: 'FunctionExpression';
+}
+export function functionExpression(
+    id: Identifier | null | undefined,
+    params: Identifier[],
+    body: BlockStatement
+): FunctionExpression {
+    return {
+        type: 'FunctionExpression',
+        id: id || null,
+        params,
+        body
     };
 }
 

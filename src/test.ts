@@ -11,4 +11,4 @@ console.log(tokens);
 const parser = new Parser(tokens);
 const ast = parser.parse();
 
-console.log(JSON.stringify(ast));
+console.log(JSON.stringify(ast, null, 4));
