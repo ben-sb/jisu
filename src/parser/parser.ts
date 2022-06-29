@@ -107,7 +107,7 @@ export class Parser {
             case tt.SemiColon:
                 return this.parseEmptyStatement();
             default:
-                throw new Error(`Unexpected token ${token.value}`);
+                return this.parseExpressionStatement();
         }
     }
 
@@ -401,6 +401,16 @@ export class Parser {
     private parseEmptyStatement(): t.EmptyStatement {
         this.parseSemiColon();
         return t.emptyStatement();
+    }
+
+    /**
+     * Parses an expression statement.
+     * @returns The expression statement node.
+     */
+    private parseExpressionStatement(): t.ExpressionStatement {
+        const expression = this.parseExpression();
+        this.parseSemiColon();
+        return t.expressionStatement(expression);
     }
 
     /**
