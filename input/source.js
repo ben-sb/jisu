@@ -1,6 +1,10 @@
 switch (a) {
-    case a: 
-        var a = 5,
-            b = 10;
+    case a: {
+        var a = 5;
         break;
+    }
+
+    default: {
+        break;
+    }
 }
