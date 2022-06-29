@@ -1,1 +1,3 @@
-return 5, a, b, c, 20;
+function hello() {
+
+}

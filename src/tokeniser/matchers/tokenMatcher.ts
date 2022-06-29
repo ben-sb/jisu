@@ -195,7 +195,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['c', [stringMatcher(tt.Continue, 'continue')]],
     ['e', [stringMatcher(tt.Else, 'else')]],
     ['i', [stringMatcher(tt.If, 'if')]],
-    ['f', [stringMatcher(tt.For, 'for')]],
+    ['f', [stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],
     ['r', [stringMatcher(tt.Return, 'return')]],
     ['v', [stringMatcher(tt.Var, 'var')]],
     ['w', [stringMatcher(tt.While, 'while')]],
@@ -213,6 +213,8 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     [']', [characterMatcher(tt.RightBracket, ']')]],
     ['(', [characterMatcher(tt.LeftParenthesis, '(')]],
     [')', [characterMatcher(tt.RightParenthesis, ')')]],
+    ['{', [characterMatcher(tt.LeftBrace, '{')]],
+    ['}', [characterMatcher(tt.RightBrace, '}')]],
 
     // matches all other characters
     [OTHER_CHARS_KEY, [
