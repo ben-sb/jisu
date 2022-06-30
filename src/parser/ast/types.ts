@@ -19,7 +19,7 @@ type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | AssignmentExpression | UnaryExpression | BinaryExpression 
     | ThisExpression | LogicalExpression | SequenceExpression 
-    | FunctionExpression | ArrayExpression;
+    | FunctionExpression | ArrayExpression | ObjectExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -180,6 +180,60 @@ export function arrayExpression(elements: (Expression | null)[]): ArrayExpressio
     return {
         type: 'ArrayExpression',
         elements
+    };
+}
+
+export type ObjectMember = Node & {
+    type: 'ObjectMember';
+    key: Expression;
+    computed: boolean;
+}
+export type ObjectProperty = OmitType<ObjectMember> & {
+    type: 'ObjectProperty';
+    value: Expression;
+    shorthand: boolean;
+}
+export function objectProperty(key: Expression, value: Expression, computed: boolean = false, shorthand: boolean = false): ObjectProperty {
+    return {
+        type: 'ObjectProperty',
+        key, 
+        value,
+        computed,
+        shorthand
+    };
+}
+
+export type ObjectMethod = OmitType<Function> & OmitType<ObjectMember> & {
+    type: 'ObjectMethod';
+    kind: 'get' | 'set' | 'method';
+}
+export function objectMethod(
+    kind: 'get' | 'set' | 'method',
+    key: Expression,
+    params: Identifier[],
+    body: BlockStatement,
+    computed: boolean = false
+
+): ObjectMethod {
+    return {
+        type: 'ObjectMethod',
+        kind,
+        key,
+        id: null,
+        params,
+        body,
+        computed
+    };
+}
+
+export type ObjectExpression = Node & {
+    type: 'ObjectExpression';
+    properties: (ObjectProperty | ObjectMethod)[];
+}
+export function objectExpression(properties: (ObjectProperty | ObjectMethod)[]): ObjectExpression {
+    return {
+        type: 'ObjectExpression',
+        properties
     };
 }
 
