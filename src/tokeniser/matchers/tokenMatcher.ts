@@ -344,6 +344,82 @@ const matchRightArrowTokens = (input: string): TokenMatchResult => {
 };
 
 /**
+ * Matches all tokens that start with '='.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchEqualTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '=') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            nextChar = input.charAt(2);
+            if (nextChar == '=') {
+                return {
+                    matched: true,
+                    length: 3,
+                    token: new Token(tt.StrictEquality, '===')
+                };
+            } else {
+                return {
+                    matched: true,
+                    length: 2,
+                    token: new Token(tt.Equality, '==')
+                };
+            }
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Assignment, '=')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+}
+
+/**
+ * Matches all tokens that start with '!'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+ const matchExclamationTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '!') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            nextChar = input.charAt(2);
+            if (nextChar == '=') {
+                return {
+                    matched: true,
+                    length: 3,
+                    token: new Token(tt.StrictInequality, '!==')
+                };
+            } else {
+                return {
+                    matched: true,
+                    length: 2,
+                    token: new Token(tt.Inequality, '!=')
+                };
+            }
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Not, '!')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+}
+
+/**
  * Matches all tokens that start with '|'.
  * @param input The input string.
  * @returns The match result.
@@ -460,6 +536,11 @@ const matchAmpersandTokens = (input: string): TokenMatchResult => {
     }
 };
 
+/**
+ * Matches all tokens that start with '?'.
+ * @param input The input string.
+ * @returns The match result.
+ */
 const matchQuestionTokens = (input: string): TokenMatchResult => {
     let nextChar = input.charAt(0);
     if (nextChar == '?') {
@@ -505,7 +586,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['c', [stringMatcher(tt.Case, 'case'), stringMatcher(tt.Continue, 'continue')]],
     ['d', [stringMatcher(tt.Default, 'default'), stringMatcher(tt.Delete, 'delete'), stringMatcher(tt.Do, 'do')]],
     ['e', [stringMatcher(tt.Else, 'else')]],
-    ['i', [stringMatcher(tt.If, 'if')]],
+    ['i', [stringMatcher(tt.If, 'if'), stringMatcher(tt.InstanceOf, 'instanceof'), stringMatcher(tt.In, 'in')]],
     ['f', [stringMatcher(tt.False, 'false'), stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],
     ['r', [stringMatcher(tt.Return, 'return')]],
     ['s', [stringMatcher(tt.Switch, 'switch')]],
@@ -514,7 +595,6 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['w', [stringMatcher(tt.While, 'while')]],
 
     [',', [characterMatcher(tt.Comma, ',')]],
-    ['=', [characterMatcher(tt.Assignment, '=')]],
     ['+', [matchPlusTokens]],
     ['-', [matchMinusTokens]],
     ['*', [matchStarTokens]],
@@ -522,11 +602,12 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['%', [matchModulusTokens]],
     ['<', [matchLeftArrowTokens]],
     ['>', [matchRightArrowTokens]],
+    ['=', [matchEqualTokens]],
+    ['!', [matchExclamationTokens]],
     ['|', [matchBarTokens]],
     ['^', [matchCaretTokens]],
     ['&', [matchAmpersandTokens]],
     ['?', [matchQuestionTokens]],
-    ['!', [characterMatcher(tt.Not, '!')]],
     ['~', [characterMatcher(tt.BitwiseNot, '~')]],
     ['[', [characterMatcher(tt.LeftBracket, '[')]],
     [']', [characterMatcher(tt.RightBracket, ']')]],

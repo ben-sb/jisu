@@ -95,8 +95,7 @@ export function unaryExpression(
 
 export type BinaryOperator = '==' | '!=' | '===' | '!==' | '<' 
     | '<=' | '>' | '>=' | '<<' | '>>' | '>>>' | '+' | '-' | '*' 
-    | '/' | '%' | '**' | '|' | '^' | '&' | 'in' | 'instanceof'
-    | '|>';
+    | '/' | '%' | '**' | '|' | '^' | '&' | 'in' | 'instanceof';
 export type BinaryExpression = Node & {
     type: 'BinaryExpression';
     operator: BinaryOperator;

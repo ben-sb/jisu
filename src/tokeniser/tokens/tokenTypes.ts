@@ -75,6 +75,12 @@ export const tt: TokenTypes = {
     BitwiseOr: new TokenType('|', { precedence: 6 }),
     BitwiseXor: new TokenType('^', { precedence: 7 }),
     BitwiseAnd: new TokenType('&', { precedence: 8 }),
+    Equality: new TokenType('==', { precedence: 9 }),
+    Inequality: new TokenType('!=', { precedence: 9 }),
+    StrictEquality: new TokenType('===', { precedence: 9 }),
+    StrictInequality: new TokenType('!==', { precedence: 9 }),
+    In: new TokenType('in', { precedence: 10 }),
+    InstanceOf: new TokenType('instanceof', { precedence: 10 }),
     LessThan: new TokenType('<', { precedence: 10 }),
     LessThanEqual: new TokenType('<=', { precedence: 10 }),
     GreaterThan: new TokenType('>', { precedence: 10 }),
@@ -118,12 +124,12 @@ export const unaryOperatorTokens: Set<TokenType> = new Set([
     tt.Delete, tt.Throw
 ]);
 
-// TODO: add rest of binary operators
 export const binaryOperatorTokens: Set<TokenType> = new Set([
     tt.LessThan, tt.LessThanEqual, tt.GreaterThan, tt.GreaterThanEqual, 
     tt.LeftShift, tt.RightShift, tt.UnsignedRightShift, tt.Add, tt.Subtract,
     tt.Multiply, tt.Divide, tt.Modulus, tt.Exponential, tt.BitwiseOr,
-    tt.BitwiseXor, tt.BitwiseAnd
+    tt.BitwiseXor, tt.BitwiseAnd, tt.Equality, tt.Inequality, 
+    tt.StrictEquality, tt.StrictInequality, tt.In, tt.InstanceOf
 ]);
 
 export const logicalOperatorTokens: Set<TokenType> = new Set([
