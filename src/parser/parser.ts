@@ -1,5 +1,5 @@
 import { Token } from '../tokeniser/tokens/token';
-import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, TokenType, tt } from '../tokeniser/tokens/tokenTypes';
+import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, TokenType, tt, unaryOperatorTokens } from '../tokeniser/tokens/tokenTypes';
 import * as t from './ast/types';
 
 export class Parser {
@@ -436,11 +436,16 @@ export class Parser {
 
     /**
      * Parses an expression that is known not to be a series of chained
-     * expressions.
+     * expressions (e.g. not a binary or sequence expression).
      * @returns The expression node.
      */
     private parseExpressionInner(): t.Expression {
         const token = this.peekToken();
+
+        if (unaryOperatorTokens.has(token.type)) {
+            return this.parseUnaryExpression();
+        }
+
         switch (token.type) {
             case tt.Function:
                 return this.parseFunction(false) as t.FunctionExpression;
@@ -496,6 +501,16 @@ export class Parser {
         const operator = this.getNextToken(assignmentOperatorTokens);
         const right = this.parseExpression();
         return t.assignmentExpression(operator.value, left, right);
+    }
+
+    /**
+     * Parses a unary expression.
+     * @returns The unary expression node.
+     */
+    private parseUnaryExpression(): t.UnaryExpression {
+        const operator = this.getNextToken(unaryOperatorTokens);
+        const expression = this.parseExpression();
+        return t.unaryExpression(operator.value, expression);
     }
 
     /**

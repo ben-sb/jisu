@@ -1,4 +1,1 @@
-var a = 10;
-while (true) {
-    a = a - 1;
-}
+x = 5 + !!false;

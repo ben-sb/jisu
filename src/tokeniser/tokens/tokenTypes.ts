@@ -106,7 +106,10 @@ export const assignmentOperatorTokens: Set<TokenType> = new Set([
     tt.BitwiseXorAssignment, tt.BitwiseAndAssignment
 ]);
 
-// TODO: add unary operators
+export const unaryOperatorTokens: Set<TokenType> = new Set([
+    tt.Add, tt.Subtract, tt.Not, tt.BitwiseNot, tt.Typeof, tt.Void,
+    tt.Delete, tt.Throw
+]);
 
 // TODO: add rest of binary operators
 export const binaryOperatorTokens: Set<TokenType> = new Set([
