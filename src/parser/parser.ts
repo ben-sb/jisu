@@ -456,6 +456,8 @@ export class Parser {
             case tt.True:
             case tt.False:
                 return this.parseBooleanLiteral();
+            case tt.This:
+                return this.parseThisExpression();
             case tt.LeftParenthesis:
                 return this.parseParenthesisedExpression();
             default:
@@ -490,6 +492,15 @@ export class Parser {
         const token = this.getNextToken(booleanValueTokens);
         const value = token.type == tt.True;
         return t.booleanLiteral(value);
+    }
+
+    /**
+     * Parses a this expression.
+     * @returns The this expression node.
+     */
+    private parseThisExpression(): t.ThisExpression {
+        this.getNextToken(tt.This);
+        return t.thisExpression();
     }
 
     /**

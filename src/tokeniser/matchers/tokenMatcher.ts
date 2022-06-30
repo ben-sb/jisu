@@ -590,7 +590,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['f', [stringMatcher(tt.False, 'false'), stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],
     ['r', [stringMatcher(tt.Return, 'return')]],
     ['s', [stringMatcher(tt.Switch, 'switch')]],
-    ['t', [stringMatcher(tt.Throw, 'throw'), stringMatcher(tt.True, 'true'), stringMatcher(tt.Typeof, 'typeof')]],
+    ['t', [stringMatcher(tt.This, 'this'), stringMatcher(tt.Throw, 'throw'), stringMatcher(tt.True, 'true'), stringMatcher(tt.Typeof, 'typeof')]],
     ['v', [stringMatcher(tt.Var, 'var'), stringMatcher(tt.Void, 'void')]],
     ['w', [stringMatcher(tt.While, 'while')]],
 

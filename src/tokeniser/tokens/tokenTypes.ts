@@ -45,6 +45,7 @@ export const tt: TokenTypes = {
     Function: new TokenType('function'),
     Return: new TokenType('return'),
     Switch: new TokenType('switch'),
+    This: new TokenType('this'),
     True: new TokenType('true'),
     Var: new TokenType('var'),
     While: new TokenType('while'),
