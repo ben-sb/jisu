@@ -653,13 +653,17 @@ export class Parser {
             } else if (nextToken.type == tt.Identifier) {
                 key = this.parseIdentifier();
 
-                // handle getter or setter
-                if (key.name == 'get' || key.name == 'set' && this.peekToken().type == tt.Identifier) {
+                if (key.name == 'get' || key.name == 'set' && this.peekToken().type == tt.Identifier) { // getter or setter
                     method = key.name;
                     key = this.parseIdentifier();
                     if (this.peekToken().type != tt.LeftParenthesis) {
                         throw new Error(this.unexpectedTokenErrorMessage(this.peekToken(), tt.LeftParenthesis));
                     }
+                } else if (this.peekToken().type == tt.Comma) { // shorthand property
+                    this.advance();
+                    const property = t.objectProperty(key, key, false, true);
+                    properties.push(property);
+                    continue;
                 }
             } else {
                 throw new Error(this.unexpectedTokenErrorMessage(nextToken));
