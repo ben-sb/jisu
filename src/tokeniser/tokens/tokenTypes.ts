@@ -116,7 +116,8 @@ export const assignmentOperatorTokens: Set<TokenType> = new Set([
     tt.MultiplyAssignment, tt.DivideAssignment, tt.ModulusAssignment,
     tt.ExponentialAssignment, tt.LeftShiftAssignment, tt.RightShiftAssignment,
     tt.UnsignedRightShiftAssignment, tt.BitwiseOrAssignment, 
-    tt.BitwiseXorAssignment, tt.BitwiseAndAssignment
+    tt.BitwiseXorAssignment, tt.BitwiseAndAssignment, tt.OrAssignment,
+    tt.AndAssignment, tt.NullCoalescingAssignment
 ]);
 
 export const unaryOperatorTokens: Set<TokenType> = new Set([

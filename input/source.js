@@ -1,1 +1,1 @@
-a instanceof b;
+a ??= 2;
