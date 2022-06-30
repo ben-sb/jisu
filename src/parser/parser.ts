@@ -420,10 +420,10 @@ export class Parser {
      */
     private parseExpression(canBeSequence: boolean = true): t.Expression {
         const expression = this.parseExpressionInner();
-
         const nextToken = this.peekToken();
+
         if (binaryOperatorTokens.has(nextToken.type)) {
-            throw new Error('Binary expression parsing not implemented');
+            return this.parseBinaryExpression(expression);
         } else if (canBeSequence && nextToken.type == tt.Comma) {
             this.advance();
             return this.parseSequenceExpression(expression);
@@ -449,30 +449,11 @@ export class Parser {
             case tt.True:
             case tt.False:
                 return this.parseBooleanLiteral();
+            case tt.LeftParenthesis:
+                return this.parseParenthesisedExpression();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
         }
-    }
-
-    /**
-     * Parses a sequence expression.
-     * @param firstExpression The first expression in the sequence.
-     * @returns The sequence expression node.
-     */
-    private parseSequenceExpression(firstExpression: t.Expression): t.SequenceExpression {
-        const expressions = [firstExpression];
-        while (true) {
-            const nextExpression = this.parseExpressionInner();
-            expressions.push(nextExpression);
-
-            if (this.peekToken().type == tt.Comma) {
-                this.advance();
-            } else {
-                break;
-            }
-        }
-
-        return t.sequenceExpression(expressions);
     }
 
     /**
@@ -502,5 +483,68 @@ export class Parser {
         const token = this.getNextToken([tt.True, tt.False]);
         const value = token.type == tt.True;
         return t.booleanLiteral(value);
+    }
+
+    /**
+     * Parses a binary expression.
+     * @param firstExpression The first expression in the binary expression.
+     * @param minPrecedence The minimum precedence to continue (defaults to 0).
+     * @returns The binary expression node.
+     */
+    private parseBinaryExpression(firstExpression: t.Expression, minPrecedence: number = 0): t.BinaryExpression {
+        let expression = firstExpression;
+        let lookahead = this.peekToken();
+
+        while (binaryOperatorTokens.has(lookahead.type) && lookahead.type.precedence! >= minPrecedence) {
+            const operator = lookahead.type;
+            const operatorPrecedence = operator.precedence as number;
+            this.advance();
+            let right = this.parseExpressionInner();
+            
+            lookahead = this.peekToken();
+            while (binaryOperatorTokens.has(lookahead.type) && (lookahead.type.precedence! > operatorPrecedence
+                || (lookahead.type.rightAssociative && lookahead.type.precedence! >= operatorPrecedence))) {
+                const nextMinPrecedence = operatorPrecedence + +(lookahead.type.precedence! > operatorPrecedence);
+                right = this.parseBinaryExpression(right, nextMinPrecedence);
+                lookahead = this.peekToken();
+            }
+
+            expression = t.binaryExpression(operator.name as any, expression, right);
+        }
+
+        return expression as t.BinaryExpression;
+    }
+
+    /**
+     * Parses a sequence expression.
+     * @param firstExpression The first expression in the sequence.
+     * @returns The sequence expression node.
+     */
+    private parseSequenceExpression(firstExpression: t.Expression): t.SequenceExpression {
+        const expressions = [firstExpression];
+        while (true) {
+            const nextExpression = this.parseExpressionInner();
+            expressions.push(nextExpression);
+
+            if (this.peekToken().type == tt.Comma) {
+                this.advance();
+            } else {
+                break;
+            }
+        }
+
+        return t.sequenceExpression(expressions);
+    }
+
+    /**
+     * Parses an expression within parenthesis.
+     * @returns The expression node.
+     */
+    private parseParenthesisedExpression(): t.Expression {
+        this.getNextToken(tt.LeftParenthesis);
+        const expression = this.parseExpression();
+        this.getNextToken(tt.RightParenthesis);
+
+        return expression;
     }
 }

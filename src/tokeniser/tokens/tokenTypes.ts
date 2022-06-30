@@ -1,6 +1,7 @@
 export class TokenType {
     name: string;
     precedence?: number;
+    rightAssociative?: boolean;
 
     /**
      * Creates a new token type.
@@ -10,11 +11,13 @@ export class TokenType {
     constructor(name: string, options: TokenOptions = {}) {
         this.name = name;
         this.precedence = options.precedence;
+        this.rightAssociative = options.rightAssociative;
     }
 }
 
 interface TokenOptions {
     precedence?: number;
+    rightAssociative?: boolean;
 }
 
 type TokenTypes = { [name: string]: TokenType };
@@ -49,7 +52,7 @@ export const tt: TokenTypes = {
 
     // operator tokens
     Comma: new TokenType(',', { precedence: 1 }),
-    Assignment: new TokenType('=', { precedence: 2 }),
+    Assignment: new TokenType('=', { precedence: 2, rightAssociative: true }),
     LessThan: new TokenType('<', { precedence: 10 }),
     LessThanEqual: new TokenType('<=', { precedence: 10 }),
     GreaterThan: new TokenType('>', { precedence: 10 }),
@@ -62,7 +65,7 @@ export const tt: TokenTypes = {
     Multiply: new TokenType('*', { precedence: 13 }),
     Divide: new TokenType('/', { precedence: 13 }),
     Modulus: new TokenType('%', { precedence: 13 }),
-    Exponential: new TokenType('**', { precedence: 14 }),
+    Exponential: new TokenType('**', { precedence: 14, rightAssociative: true }),
     LeftBracket: new TokenType('[', { precedence: 18 }),
     RightBracket: new TokenType(']', { precedence: 18 }),
     LeftParenthesis: new TokenType('(', { precedence: 19 }),
