@@ -23,7 +23,15 @@ interface TokenOptions {
 type TokenTypes = { [name: string]: TokenType };
 
 export const tt: TokenTypes = {
+    // misc
     EOF: new TokenType('eof'),
+    Identifier: new TokenType('identifier'),
+    Number: new TokenType('number'),
+    LeftBrace: new TokenType('{'),
+    RightBrace: new TokenType('}'),
+    Question: new TokenType('?'),
+    Colon: new TokenType(':'),
+    SemiColon: new TokenType(';'),
 
     // keywords
     If: new TokenType('if'),
@@ -35,21 +43,12 @@ export const tt: TokenTypes = {
     Else: new TokenType('else'),
     False: new TokenType('false'),
     For: new TokenType('for'),
+    Function: new TokenType('function'),
     Return: new TokenType('return'),
     Switch: new TokenType('switch'),
     True: new TokenType('true'),
     Var: new TokenType('var'),
     While: new TokenType('while'),
-
-    Identifier: new TokenType('identifier'),
-
-    Number: new TokenType('number'),
-    Function: new TokenType('function'),
-    LeftBrace: new TokenType('{'),
-    RightBrace: new TokenType('}'),
-    Question: new TokenType('?'),
-    Colon: new TokenType(':'),
-    SemiColon: new TokenType(';'),
 
     // operator tokens
     Comma: new TokenType(',', { precedence: 1 }),
