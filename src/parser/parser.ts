@@ -50,10 +50,10 @@ export class Parser {
         if (requiredType && token.type != requiredType) {
             if (requiredType instanceof Set) {
                 if (!requiredType.has(token.type)) {
-                    throw new Error(`Unexpected token ${token.value}, expected type to be one of ${Array.from(requiredType).map(t => t.name).join(',')}`);
+                    throw new Error(`Unexpected token ${token.value}, expected one of ${Array.from(requiredType).map(t => t.name).join(',')}`);
                 }
             } else if (token.type != requiredType) {
-                throw new Error(`Unexpected token ${token.value}, expected type ${requiredType.name}`);
+                throw new Error(`Unexpected token ${token.value}, expected ${requiredType.name}`);
             }
         }
         return token;

@@ -402,7 +402,7 @@ const matchCaretTokens = (input: string): TokenMatchResult => {
 };
 
 /**
- * Matches all tokens that start with '^'.
+ * Matches all tokens that start with '&'.
  * @param input The input string.
  * @returns The match result.
  */

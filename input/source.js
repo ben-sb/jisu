@@ -1,1 +1,4 @@
-a &= 5;
+var a = 10;
+while (true) {
+    a = a - 1;
+}

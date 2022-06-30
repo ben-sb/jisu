@@ -62,7 +62,7 @@ export class Tokeniser {
             this.readWhitespace();
         }
 
-        this.tokens.push(new Token(tt.EOF, null));
+        this.tokens.push(new Token(tt.EOF, 'EOF'));
         return this.tokens;
     }
 
