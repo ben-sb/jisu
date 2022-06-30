@@ -23,7 +23,6 @@ interface TokenOptions {
 type TokenTypes = { [name: string]: TokenType };
 
 export const tt: TokenTypes = {
-    // misc
     EOF: new TokenType('eof'),
     Identifier: new TokenType('identifier'),
     Number: new TokenType('number'),
