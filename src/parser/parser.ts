@@ -1,5 +1,5 @@
 import { Token } from '../tokeniser/tokens/token';
-import { binaryOperatorTokens, TokenType, tt } from '../tokeniser/tokens/tokenTypes';
+import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, TokenType, tt } from '../tokeniser/tokens/tokenTypes';
 import * as t from './ast/types';
 
 export class Parser {
@@ -42,15 +42,15 @@ export class Parser {
      * @param requiredType The type the token is required to be (optional).
      * @returns The next token.
      */
-    private getNextToken(requiredType?: TokenType | TokenType[]): Token {
+    private getNextToken(requiredType?: TokenType | Set<TokenType>): Token {
         const token = this.position < this.tokens.length
             ? this.tokens[this.advance()]
             : this.tokens[this.tokens.length - 1]; // EOF token
 
         if (requiredType && token.type != requiredType) {
-            if (Array.isArray(requiredType)) {
-                if (!new Set(requiredType).has(token.type)) {
-                    throw new Error(`Unexpected token ${token.value}, expected type to be one of ${requiredType.map(t => t.name).join(',')}`);
+            if (requiredType instanceof Set) {
+                if (!requiredType.has(token.type)) {
+                    throw new Error(`Unexpected token ${token.value}, expected type to be one of ${Array.from(requiredType).map(t => t.name).join(',')}`);
                 }
             } else if (token.type != requiredType) {
                 throw new Error(`Unexpected token ${token.value}, expected type ${requiredType.name}`);
@@ -422,7 +422,9 @@ export class Parser {
         const expression = this.parseExpressionInner();
         const nextToken = this.peekToken();
 
-        if (binaryOperatorTokens.has(nextToken.type)) {
+        if (assignmentOperatorTokens.has(nextToken.type)) {
+            return this.parseAssignmentExpression(expression);
+        } else if (binaryOperatorTokens.has(nextToken.type)) {
             return this.parseBinaryExpression(expression);
         } else if (canBeSequence && nextToken.type == tt.Comma) {
             this.advance();
@@ -480,9 +482,20 @@ export class Parser {
      * @returns The boolean literal node.
      */
     private parseBooleanLiteral(): t.BooleanLiteral {
-        const token = this.getNextToken([tt.True, tt.False]);
+        const token = this.getNextToken(booleanValueTokens);
         const value = token.type == tt.True;
         return t.booleanLiteral(value);
+    }
+
+    /**
+     * Parses an assignment expression.
+     * @param left The left hand side of the assignment.
+     * @returns The assignment expression node.
+     */
+    private parseAssignmentExpression(left: t.Expression): t.AssignmentExpression {
+        const operator = this.getNextToken(assignmentOperatorTokens);
+        const right = this.parseExpression();
+        return t.assignmentExpression(operator.value, left, right);
     }
 
     /**

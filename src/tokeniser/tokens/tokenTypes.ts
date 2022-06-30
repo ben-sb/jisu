@@ -53,6 +53,21 @@ export const tt: TokenTypes = {
     // operator tokens
     Comma: new TokenType(',', { precedence: 1 }),
     Assignment: new TokenType('=', { precedence: 2, rightAssociative: true }),
+    AddAssignment: new TokenType('+=', { precedence: 2, rightAssociative: true }),
+    SubtractAssignment: new TokenType('-=', { precedence: 2, rightAssociative: true }),
+    MultiplyAssignment: new TokenType('*=', { precedence: 2, rightAssociative: true }),
+    DivideAssignment: new TokenType('/=', { precedence: 2, rightAssociative: true }),
+    ModulusAssignment: new TokenType('%=', { precedence: 2, rightAssociative: true }),
+    ExponentialAssignment: new TokenType('**=', { precedence: 2, rightAssociative: true }),
+    LeftShiftAssignment: new TokenType('<<=', { precedence: 2, rightAssociative: true }),
+    RightShiftAssignment: new TokenType('>>=', { precedence: 2, rightAssociative: true }),
+    UnsignedRightShiftAssignment: new TokenType('>>>=', { precedence: 2, rightAssociative: true }),
+    BitwiseOrAssignment: new TokenType('|=', { precedence: 2, rightAssociative: true }),
+    BitwiseXorAssignment: new TokenType('^=', { precedence: 2, rightAssociative: true }),
+    BitwiseAndAssignment: new TokenType('&=', { precedence: 2, rightAssociative: true }),
+    BitwiseOr: new TokenType('|', { precedence: 6 }),
+    BitwiseXor: new TokenType('^', { precedence: 7 }),
+    BitwiseAnd: new TokenType('&', { precedence: 8 }),
     LessThan: new TokenType('<', { precedence: 10 }),
     LessThanEqual: new TokenType('<=', { precedence: 10 }),
     GreaterThan: new TokenType('>', { precedence: 10 }),
@@ -72,13 +87,25 @@ export const tt: TokenTypes = {
     RightParenthesis: new TokenType(')', { precedence: 19 })
 };
 
+export const booleanValueTokens: Set<TokenType> = new Set([
+    tt.True, tt.False
+]);
+
+// TODO: add rest of assignment operators
+export const assignmentOperatorTokens: Set<TokenType> = new Set([
+    tt.Assignment, tt.AddAssignment, tt.SubtractAssignment, 
+    tt.MultiplyAssignment, tt.DivideAssignment, tt.ModulusAssignment,
+    tt.ExponentialAssignment, tt.LeftShiftAssignment, tt.RightShiftAssignment,
+    tt.UnsignedRightShiftAssignment, tt.BitwiseOrAssignment, 
+    tt.BitwiseXorAssignment, tt.BitwiseAndAssignment
+]);
+
 // TODO: add unary operators
 
 // TODO: add rest of binary operators
 export const binaryOperatorTokens: Set<TokenType> = new Set([
-    tt.LessThan, tt.LessThanEqual, tt.GreaterThan,
-    tt.GreaterThanEqual, tt.LeftShift, tt.RightShift,
-    tt.UnsignedRightShift, tt.Add, tt.Subtract,
-    tt.Multiply, tt.Divide, tt.Modulus,
-    tt.Exponential
+    tt.LessThan, tt.LessThanEqual, tt.GreaterThan, tt.GreaterThanEqual, 
+    tt.LeftShift, tt.RightShift, tt.UnsignedRightShift, tt.Add, tt.Subtract,
+    tt.Multiply, tt.Divide, tt.Modulus, tt.Exponential, tt.BitwiseOr,
+    tt.BitwiseXor, tt.BitwiseAnd
 ]);

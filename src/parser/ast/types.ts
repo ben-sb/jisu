@@ -16,9 +16,9 @@ export function program(body: Statement[]): Program {
 type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 
 // expressions
-export type Expression = Identifier | BooleanLiteral | NumericLiteral 
-    | UnaryExpression | BinaryExpression | SequenceExpression 
-    | FunctionExpression;
+export type Expression = Identifier | NumericLiteral | BooleanLiteral
+    | AssignmentExpression | UnaryExpression | BinaryExpression 
+    | SequenceExpression | FunctionExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -50,6 +50,28 @@ export function booleanLiteral(value: boolean): BooleanLiteral {
     return {
         type: 'BooleanLiteral',
         value
+    };
+}
+
+export type AssignmentOperator = '=' | '+=' | '-=' | '*=' | '/=' 
+    | '%=' | '**=' | '<<=' | '>>=' | '>>>=' | '|=' | '^=' | '&='
+    | '||=' | '&&=' | '??=';
+export type AssignmentExpression = Node & {
+    type: 'AssignmentExpression';
+    operator: AssignmentOperator;
+    left: Expression;
+    right: Expression;
+}
+export function assignmentExpression(
+    operator: AssignmentOperator, 
+    left: Expression,
+    right: Expression
+): AssignmentExpression {
+    return {
+        type: 'AssignmentExpression',
+        operator,
+        left,
+        right
     };
 }
 

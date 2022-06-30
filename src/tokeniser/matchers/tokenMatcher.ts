@@ -81,19 +81,189 @@ const regexMatcher = (type: TokenType, regex: RegExp): TokenMatcher => {
 };
 
 /**
+ * Matches all tokens that start with '+'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchPlusTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '+') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.AddAssignment, '+=')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Add, '+')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
+
+/**
+ * Matches all tokens that start with '-'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchMinusTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '-') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.SubtractAssignment, '-=')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Subtract, '-')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
+
+/**
+ * Matches all tokens that start with '*'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchStarTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '*') {
+        nextChar = input.charAt(1);
+        if (nextChar == '*') {
+            nextChar = input.charAt(2);
+            if (nextChar == '=') {
+                return {
+                    matched: true,
+                    length: 3,
+                    token: new Token(tt.ExponentialAssignment, '**=')
+                };
+            } else {
+                return {
+                    matched: true,
+                    length: 2,
+                    token: new Token(tt.Exponential, '**')
+                };
+            }
+        } else if (nextChar == '=') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.MultiplyAssignment, '*=')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Multiply, '*')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
+
+/**
+ * Matches all tokens that start with '/'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchDivideTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '/') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.DivideAssignment, '/=')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Divide, '/')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
+
+/**
+ * Matches all tokens that start with '%'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchModulusTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '%') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.ModulusAssignment, '%=')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Modulus, '%')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
+
+/**
  * Matches all tokens that start with '>'.
  * @param input The input string.
  * @returns The match result.
  */
 const matchLeftArrowTokens = (input: string): TokenMatchResult => {
-    if (input.charAt(0) == '<') {
-        const nextChar = input.charAt(1);
+    let nextChar = input.charAt(0);
+    if (nextChar == '<') {
+        nextChar = input.charAt(1);
         if (nextChar == '<') {
-            return {
-                matched: true,
-                length: 2,
-                token: new Token(tt.LeftShift, '<<')
-            };
+            nextChar = input.charAt(2);
+            if (nextChar == '=') {
+                return {
+                    matched: true,
+                    length: 3,
+                    token: new Token(tt.LeftShiftAssignment, '<<=')
+                };
+            } else {
+                return {
+                    matched: true,
+                    length: 2,
+                    token: new Token(tt.LeftShift, '<<')
+                };
+            }
         } else if (nextChar == '=') {
             return {
                 matched: true,
@@ -120,14 +290,31 @@ const matchLeftArrowTokens = (input: string): TokenMatchResult => {
  * @returns The match result.
  */
 const matchRightArrowTokens = (input: string): TokenMatchResult => {
-    if (input.charAt(0) == '>') {
-        const nextChar = input.charAt(1);
+    let nextChar = input.charAt(0);
+    if (nextChar == '>') {
+        nextChar = input.charAt(1);
         if (nextChar == '>') {
-            if (input.charAt(2) == '>') {
+            nextChar = input.charAt(2);
+            if (nextChar == '>') {
+                nextChar = input.charAt(3);
+                if (nextChar == '=') {
+                    return {
+                        matched: true,
+                        length: 4,
+                        token: new Token(tt.UnsignedRightShiftAssignment, '>>>=')
+                    };
+                } else {
+                    return {
+                        matched: true,
+                        length: 3,
+                        token: new Token(tt.UnsignedRightShift, '>>>')
+                    };
+                }
+            } else if (nextChar == '=') {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.UnsignedRightShift, '>>>')
+                    token: new Token(tt.RightShiftAssignment, '>>=')
                 };
             } else {
                 return {
@@ -157,23 +344,25 @@ const matchRightArrowTokens = (input: string): TokenMatchResult => {
 };
 
 /**
- * Matches all tokens that start with '*'.
+ * Matches all tokens that start with '|'.
  * @param input The input string.
  * @returns The match result.
  */
-const matchStarTokens = (input: string): TokenMatchResult => {
-    if (input.charAt(0) == '*') {
-        if (input.charAt(1) == '*') {
+const matchBarTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '|') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.Exponential, '**')
+                token: new Token(tt.BitwiseOrAssignment, '|=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Multiply, '*')
+                token: new Token(tt.BitwiseOr, '|')
             };
         }
     } else {
@@ -181,7 +370,65 @@ const matchStarTokens = (input: string): TokenMatchResult => {
             matched: false
         };
     }
-}
+};
+
+/**
+ * Matches all tokens that start with '^'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchCaretTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '^') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.BitwiseXorAssignment, '^=')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.BitwiseXor, '^')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
+
+/**
+ * Matches all tokens that start with '^'.
+ * @param input The input string.
+ * @returns The match result.
+ */
+const matchAmpersandTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '&') {
+        nextChar = input.charAt(1);
+        if (nextChar == '=') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.BitwiseAndAssignment, '&=')
+            };
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.BitwiseAnd, '&')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
 
 // used as key for all other characters in matcher map
 export const OTHER_CHARS_KEY = {};
@@ -203,15 +450,18 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['v', [stringMatcher(tt.Var, 'var')]],
     ['w', [stringMatcher(tt.While, 'while')]],
 
-    ['<', [matchLeftArrowTokens]],
-    ['>', [matchRightArrowTokens]],
-    ['*', [matchStarTokens]],
     [',', [characterMatcher(tt.Comma, ',')]],
     ['=', [characterMatcher(tt.Assignment, '=')]],
-    ['+', [characterMatcher(tt.Add, '+')]],
-    ['-', [characterMatcher(tt.Subtract, '-')]],
-    ['/', [characterMatcher(tt.Divide, '/')]],
-    ['%', [characterMatcher(tt.Modulus, '%')]],
+    ['+', [matchPlusTokens]],
+    ['-', [matchMinusTokens]],
+    ['*', [matchStarTokens]],
+    ['/', [matchDivideTokens]],
+    ['%', [matchModulusTokens]],
+    ['<', [matchLeftArrowTokens]],
+    ['>', [matchRightArrowTokens]],
+    ['|', [matchBarTokens]],
+    ['^', [matchCaretTokens]],
+    ['&', [matchAmpersandTokens]],
     ['[', [characterMatcher(tt.LeftBracket, '[')]],
     [']', [characterMatcher(tt.RightBracket, ']')]],
     ['(', [characterMatcher(tt.LeftParenthesis, '(')]],
