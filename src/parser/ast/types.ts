@@ -75,7 +75,7 @@ export function assignmentExpression(
     };
 }
 
-export type UnaryOperator = '-' | '+' | '!' | '~' | 'typeof' 
+export type UnaryOperator = '+' | '-' | '!' | '~' | 'typeof' 
     | 'void' | 'delete' | 'throw';
 export type UnaryExpression = Node & {
     type: 'UnaryExpression';
