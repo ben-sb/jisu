@@ -158,6 +158,7 @@ export class Parser {
 
     /**
      * Parses a function declaration or expression.
+     * @param isDeclaration Whether it is a function declaration.
      * @returns The function declaration or expression node.
      */
     private parseFunction(isDeclaration: boolean): t.FunctionDeclaration | t.FunctionExpression {
@@ -462,6 +463,8 @@ export class Parser {
                 return this.parseParenthesisedExpression();
             case tt.LeftBracket:
                 return this.parseArrayExpression();
+            case tt.LeftBrace:
+                return this.parseObjectExpression();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
         }
@@ -614,5 +617,53 @@ export class Parser {
         this.getNextToken(tt.RightBracket);
 
         return t.arrayExpression(elements);
+    }
+
+    /**
+     * Parses an object expression.
+     * @returns The object expression node.
+     */
+    private parseObjectExpression(): t.ObjectExpression {
+        this.getNextToken(tt.LeftBrace);
+
+        const properties = [];
+        while (this.peekToken().type != tt.RightBrace) {
+            let key: t.Expression;
+            let computed = false;
+
+            let nextToken = this.peekToken();
+            if (nextToken.type == tt.LeftBracket) {
+                this.getNextToken(tt.LeftBracket);
+                key = this.parseExpression();
+                this.getNextToken(tt.RightBracket);
+                computed = true;
+            } else if (nextToken.type == tt.Identifier) {
+                key = this.parseIdentifier();
+            } else {
+                throw new Error(`Unexpected token ${nextToken.value}`);
+            }
+
+            let property: t.ObjectProperty | t.ObjectMethod;
+            nextToken = this.peekToken();
+            if (nextToken.type == tt.Colon) {
+                this.getNextToken();
+                const value = this.parseExpression(false);
+                property = t.objectProperty(key, value, computed);
+            } else if (nextToken.type == tt.LeftParenthesis) {
+                const params = this.parseFunctionParams();
+                const body = this.parseBlockStatement();
+                property = t.objectMethod('method', key, params, body, computed);
+            } else {
+                throw new Error(`Unexpected token ${nextToken.value}`);
+            }
+            properties.push(property);
+
+            if (this.peekToken().type == tt.Comma) {
+                this.advance();
+            }
+        }
+        this.getNextToken(tt.RightBrace);
+
+        return t.objectExpression(properties);
     }
 }
