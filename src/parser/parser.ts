@@ -652,6 +652,8 @@ export class Parser {
                 computed = true;
             } else if (nextToken.type == tt.Identifier) {
                 key = this.parseIdentifier();
+
+                // handle getter or setter
                 if (key.name == 'get' || key.name == 'set' && this.peekToken().type == tt.Identifier) {
                     method = key.name;
                     key = this.parseIdentifier();
