@@ -19,7 +19,7 @@ type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | AssignmentExpression | UnaryExpression | BinaryExpression 
     | ThisExpression | LogicalExpression | SequenceExpression 
-    | FunctionExpression;
+    | FunctionExpression | ArrayExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -169,6 +169,17 @@ export function functionExpression(
         id: id || null,
         params,
         body
+    };
+}
+
+export type ArrayExpression = Node & {
+    type: 'ArrayExpression';
+    elements: (Expression | null)[];
+}
+export function arrayExpression(elements: (Expression | null)[]): ArrayExpression {
+    return {
+        type: 'ArrayExpression',
+        elements
     };
 }
 

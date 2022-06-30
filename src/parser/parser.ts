@@ -460,6 +460,8 @@ export class Parser {
                 return this.parseThisExpression();
             case tt.LeftParenthesis:
                 return this.parseParenthesisedExpression();
+            case tt.LeftBracket:
+                return this.parseArrayExpression();
             default:
                 throw new Error(`Unexpected token ${token.value}`);
         }
@@ -588,5 +590,29 @@ export class Parser {
         this.getNextToken(tt.RightParenthesis);
 
         return expression;
+    }
+
+    /**
+     * Parses an array expression.
+     * @returns The array expression node.
+     */
+    private parseArrayExpression(): t.ArrayExpression {
+        this.getNextToken(tt.LeftBracket);
+
+        const elements = [];
+        while (this.peekToken().type != tt.RightBracket) {
+            if (this.peekToken().type == tt.Comma) {
+                elements.push(null);
+                this.advance();
+            } else {
+                elements.push(this.parseExpression(false));
+                if (this.peekToken().type == tt.Comma) {
+                    this.advance();
+                }
+            }
+        }
+        this.getNextToken(tt.RightBracket);
+
+        return t.arrayExpression(elements);
     }
 }
