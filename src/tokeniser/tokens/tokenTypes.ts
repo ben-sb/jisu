@@ -110,7 +110,6 @@ export const booleanValueTokens: Set<TokenType> = new Set([
     tt.True, tt.False
 ]);
 
-// TODO: add rest of assignment operators
 export const assignmentOperatorTokens: Set<TokenType> = new Set([
     tt.Assignment, tt.AddAssignment, tt.SubtractAssignment, 
     tt.MultiplyAssignment, tt.DivideAssignment, tt.ModulusAssignment,
