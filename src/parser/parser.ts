@@ -1,5 +1,5 @@
 import { Token } from '../tokeniser/tokens/token';
-import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, TokenType, tt, unaryOperatorTokens } from '../tokeniser/tokens/tokenTypes';
+import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens } from '../tokeniser/tokens/tokenTypes';
 import * as t from './ast/types';
 
 export class Parser {
@@ -424,8 +424,8 @@ export class Parser {
 
         if (assignmentOperatorTokens.has(nextToken.type)) {
             return this.parseAssignmentExpression(expression);
-        } else if (binaryOperatorTokens.has(nextToken.type)) {
-            return this.parseBinaryExpression(expression);
+        } else if (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type)) {
+            return this.parseGroupedExpression(expression);
         } else if (canBeSequence && nextToken.type == tt.Comma) {
             this.advance();
             return this.parseSequenceExpression(expression);
@@ -514,33 +514,36 @@ export class Parser {
     }
 
     /**
-     * Parses a binary expression.
-     * @param firstExpression The first expression in the binary expression.
+     * Parses a grouped expression. This is either a binary or logical 
+     * expression.
+     * @param firstExpression The first expression in the grouped expression.
      * @param minPrecedence The minimum precedence to continue (defaults to 0).
-     * @returns The binary expression node.
+     * @returns The binary or logical expression node.
      */
-    private parseBinaryExpression(firstExpression: t.Expression, minPrecedence: number = 0): t.BinaryExpression {
+    private parseGroupedExpression(firstExpression: t.Expression, minPrecedence: number = 0): t.BinaryExpression | t.LogicalExpression {
         let expression = firstExpression;
         let lookahead = this.peekToken();
 
-        while (binaryOperatorTokens.has(lookahead.type) && lookahead.type.precedence! >= minPrecedence) {
+        while (groupedOperatorTokens.has(lookahead.type) && lookahead.type.precedence! >= minPrecedence) {
             const operator = lookahead.type;
             const operatorPrecedence = operator.precedence as number;
             this.advance();
             let right = this.parseExpressionInner();
             
             lookahead = this.peekToken();
-            while (binaryOperatorTokens.has(lookahead.type) && (lookahead.type.precedence! > operatorPrecedence
+            while (groupedOperatorTokens.has(lookahead.type) && (lookahead.type.precedence! > operatorPrecedence
                 || (lookahead.type.rightAssociative && lookahead.type.precedence! >= operatorPrecedence))) {
                 const nextMinPrecedence = operatorPrecedence + +(lookahead.type.precedence! > operatorPrecedence);
-                right = this.parseBinaryExpression(right, nextMinPrecedence);
+                right = this.parseGroupedExpression(right, nextMinPrecedence);
                 lookahead = this.peekToken();
             }
 
-            expression = t.binaryExpression(operator.name as any, expression, right);
+            expression = logicalOperatorTokens.has(operator)
+                ? t.logicalExpression(operator.name as any, expression, right)
+                : t.binaryExpression(operator.name as any, expression, right);
         }
 
-        return expression as t.BinaryExpression;
+        return expression as t.BinaryExpression | t.LogicalExpression;
     }
 
     /**

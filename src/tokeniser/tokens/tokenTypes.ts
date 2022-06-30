@@ -125,3 +125,12 @@ export const binaryOperatorTokens: Set<TokenType> = new Set([
     tt.Multiply, tt.Divide, tt.Modulus, tt.Exponential, tt.BitwiseOr,
     tt.BitwiseXor, tt.BitwiseAnd
 ]);
+
+export const logicalOperatorTokens: Set<TokenType> = new Set([
+    tt.Or, tt.And, tt.NullCoalescing
+]);
+
+export const groupedOperatorTokens: Set<TokenType> = new Set([
+    ...binaryOperatorTokens,
+    ...logicalOperatorTokens
+]);

@@ -18,7 +18,7 @@ type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 // expressions
 export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | AssignmentExpression | UnaryExpression | BinaryExpression 
-    | SequenceExpression | FunctionExpression;
+    | LogicalExpression | SequenceExpression | FunctionExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
