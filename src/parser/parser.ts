@@ -37,6 +37,24 @@ export class Parser {
     }
 
     /**
+     * Returns an error message indicating an encountered token was not of the
+     * expected type.
+     * @param token The unexpected token.
+     * @param expectedType The expected token type (or set of types).
+     */
+    private unexpectedTokenErrorMessage(token: Token, expectedType?: TokenType | Set<TokenType>): string {
+        if (expectedType) {
+            if (expectedType instanceof Set) {
+                return `Unexpected token ${token.value}, expected ${Array.from(expectedType).map(t => t.name).join(',')}`;
+            } else {
+                return `Unexpected token ${token.value}, expected ${expectedType.name}`;
+            }
+        } else {
+            return  `Unexpected token ${token.value}`;
+        }
+    }
+
+    /**
      * Returns the next token from the token list and increments the
      * current position.
      * @param requiredType The type the token is required to be (optional).
@@ -48,13 +66,7 @@ export class Parser {
             : this.tokens[this.tokens.length - 1]; // EOF token
 
         if (requiredType && token.type != requiredType) {
-            if (requiredType instanceof Set) {
-                if (!requiredType.has(token.type)) {
-                    throw new Error(`Unexpected token ${token.value}, expected one of ${Array.from(requiredType).map(t => t.name).join(',')}`);
-                }
-            } else if (token.type != requiredType) {
-                throw new Error(`Unexpected token ${token.value}, expected ${requiredType.name}`);
-            }
+            throw new Error(this.unexpectedTokenErrorMessage(token, requiredType));
         }
         return token;
     }
@@ -466,7 +478,7 @@ export class Parser {
             case tt.LeftBrace:
                 return this.parseObjectExpression();
             default:
-                throw new Error(`Unexpected token ${token.value}`);
+                throw new Error(this.unexpectedTokenErrorMessage(token));
         }
     }
 
@@ -630,6 +642,7 @@ export class Parser {
         while (this.peekToken().type != tt.RightBrace) {
             let key: t.Expression;
             let computed = false;
+            let method: 'get' | 'set' | undefined;
 
             let nextToken = this.peekToken();
             if (nextToken.type == tt.LeftBracket) {
@@ -639,8 +652,15 @@ export class Parser {
                 computed = true;
             } else if (nextToken.type == tt.Identifier) {
                 key = this.parseIdentifier();
+                if (key.name == 'get' || key.name == 'set' && this.peekToken().type == tt.Identifier) {
+                    method = key.name;
+                    key = this.parseIdentifier();
+                    if (this.peekToken().type != tt.LeftParenthesis) {
+                        throw new Error(this.unexpectedTokenErrorMessage(this.peekToken(), tt.LeftParenthesis));
+                    }
+                }
             } else {
-                throw new Error(`Unexpected token ${nextToken.value}`);
+                throw new Error(this.unexpectedTokenErrorMessage(nextToken));
             }
 
             let property: t.ObjectProperty | t.ObjectMethod;
@@ -652,9 +672,9 @@ export class Parser {
             } else if (nextToken.type == tt.LeftParenthesis) {
                 const params = this.parseFunctionParams();
                 const body = this.parseBlockStatement();
-                property = t.objectMethod('method', key, params, body, computed);
+                property = t.objectMethod(method || 'method', key, params, body, computed);
             } else {
-                throw new Error(`Unexpected token ${nextToken.value}`);
+                throw new Error(this.unexpectedTokenErrorMessage(nextToken));
             }
             properties.push(property);
 

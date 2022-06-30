@@ -1,7 +1,9 @@
 var a = {
-    a: 10,
-    [b]() {
-        20;
+    get a() {
+        return 5;
     },
-    c: 30
+    b: 10,
+    [c]: function() {
+        
+    }
 };
