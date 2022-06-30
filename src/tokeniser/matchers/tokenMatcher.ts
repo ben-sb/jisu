@@ -352,7 +352,22 @@ const matchBarTokens = (input: string): TokenMatchResult => {
     let nextChar = input.charAt(0);
     if (nextChar == '|') {
         nextChar = input.charAt(1);
-        if (nextChar == '=') {
+        if (nextChar == '|') {
+            nextChar = input.charAt(2);
+            if (nextChar == '=') {
+                return {
+                    matched: true,
+                    length: 3,
+                    token: new Token(tt.OrAssignment, '||=')
+                };
+            } else {
+                return {
+                    matched: true,
+                    length: 2,
+                    token: new Token(tt.Or, '||')
+                };
+            }
+        } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
@@ -410,7 +425,22 @@ const matchAmpersandTokens = (input: string): TokenMatchResult => {
     let nextChar = input.charAt(0);
     if (nextChar == '&') {
         nextChar = input.charAt(1);
-        if (nextChar == '=') {
+        if (nextChar == '&') {
+            nextChar = input.charAt(2);
+            if (nextChar == '=') {
+                return {
+                    matched: true,
+                    length: 3,
+                    token: new Token(tt.AndAssignment, '&&=')
+                };
+            } else {
+                return {
+                    matched: true,
+                    length: 2,
+                    token: new Token(tt.And, '&&')
+                };
+            }
+        } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
@@ -421,6 +451,39 @@ const matchAmpersandTokens = (input: string): TokenMatchResult => {
                 matched: true,
                 length: 1,
                 token: new Token(tt.BitwiseAnd, '&')
+            };
+        }
+    } else {
+        return {
+            matched: false
+        };
+    }
+};
+
+const matchQuestionTokens = (input: string): TokenMatchResult => {
+    let nextChar = input.charAt(0);
+    if (nextChar == '?') {
+        nextChar = input.charAt(1);
+        if (nextChar == '?') {
+            nextChar = input.charAt(2);
+            if (nextChar == '=') {
+                return {
+                    matched: true,
+                    length: 3,
+                    token: new Token(tt.NullCoalescingAssignment, '??=')
+                };
+            } else {
+                return {
+                    matched: true,
+                    length: 2,
+                    token: new Token(tt.NullCoalescing, '??')
+                };
+            }
+        } else {
+            return {
+                matched: true,
+                length: 1,
+                token: new Token(tt.Question, '?')
             };
         }
     } else {
@@ -462,6 +525,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['|', [matchBarTokens]],
     ['^', [matchCaretTokens]],
     ['&', [matchAmpersandTokens]],
+    ['?', [matchQuestionTokens]],
     ['!', [characterMatcher(tt.Not, '!')]],
     ['~', [characterMatcher(tt.BitwiseNot, '~')]],
     ['[', [characterMatcher(tt.LeftBracket, '[')]],

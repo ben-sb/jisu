@@ -116,6 +116,26 @@ export function binaryExpression(
     };
 }
 
+export type LogicalOperator = '||' | '&&' | '??';
+export type LogicalExpression = Node & {
+    type: 'LogicalExpression';
+    operator: LogicalOperator;
+    left: Expression;
+    right: Expression;
+}
+export function logicalExpression(
+    operator: LogicalOperator,
+    left: Expression,
+    right: Expression
+): LogicalExpression {
+    return {
+        type: 'LogicalExpression',
+        operator,
+        left,
+        right
+    };
+}
+
 export type SequenceExpression = Node & {
     type: 'SequenceExpression';
     expressions: Expression[];
