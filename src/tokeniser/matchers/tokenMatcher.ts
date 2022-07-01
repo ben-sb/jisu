@@ -89,7 +89,13 @@ const matchPlusTokens = (input: string): TokenMatchResult => {
     let nextChar = input.charAt(0);
     if (nextChar == '+') {
         nextChar = input.charAt(1);
-        if (nextChar == '=') {
+        if (nextChar == '+') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.Increment, '++')
+            };
+        } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
@@ -118,7 +124,13 @@ const matchMinusTokens = (input: string): TokenMatchResult => {
     let nextChar = input.charAt(0);
     if (nextChar == '-') {
         nextChar = input.charAt(1);
-        if (nextChar == '=') {
+        if (nextChar == '-') {
+            return {
+                matched: true,
+                length: 2,
+                token: new Token(tt.Decrement, '--')
+            };
+        } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,

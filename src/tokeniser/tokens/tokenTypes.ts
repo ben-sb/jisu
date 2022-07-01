@@ -31,6 +31,8 @@ export const tt: TokenTypes = {
     Question: new TokenType('?'),
     Colon: new TokenType(':'),
     SemiColon: new TokenType(';'),
+    Increment: new TokenType('++'),
+    Decrement: new TokenType('--'),
 
     // keywords
     Async: new TokenType('async'),
@@ -42,6 +44,7 @@ export const tt: TokenTypes = {
     Continue: new TokenType('continue'),
     Debugger: new TokenType('debugger'),
     Default: new TokenType('default'),
+    Delete: new TokenType('delete'),
     Do: new TokenType('do'),
     Else: new TokenType('else'),
     False: new TokenType('false'),
@@ -53,9 +56,12 @@ export const tt: TokenTypes = {
     Return: new TokenType('return'),
     Switch: new TokenType('switch'),
     This: new TokenType('this'),
+    Throw: new TokenType('throw'),
     True: new TokenType('true'),
     Try: new TokenType('try'),
+    Typeof: new TokenType('typeof'),
     Var: new TokenType('var'),
+    Void: new TokenType('void'),
     While: new TokenType('while'),
     With: new TokenType('with'),
     Yield: new TokenType('yield'),
@@ -105,10 +111,6 @@ export const tt: TokenTypes = {
     Exponential: new TokenType('**', { precedence: 14, rightAssociative: true }),
     Not: new TokenType('!', { precedence: 15, rightAssociative: true }),
     BitwiseNot: new TokenType('~', { precedence: 15, rightAssociative: true }),
-    Typeof: new TokenType('typeof', { precedence: 15, rightAssociative: true }),
-    Void: new TokenType('void', { precedence: 15, rightAssociative: true }),
-    Delete: new TokenType('delete', { precedence: 15, rightAssociative: true }),
-    Throw: new TokenType('throw', { precedence: 15, rightAssociative: true }),
     LeftBracket: new TokenType('[', { precedence: 18 }),
     RightBracket: new TokenType(']', { precedence: 18 }),
     LeftParenthesis: new TokenType('(', { precedence: 19 }),
@@ -135,6 +137,10 @@ export const assignmentOperatorTokens: Set<TokenType> = new Set([
 export const unaryOperatorTokens: Set<TokenType> = new Set([
     tt.Add, tt.Subtract, tt.Not, tt.BitwiseNot, tt.Typeof, tt.Void,
     tt.Delete, tt.Throw
+]);
+
+export const updateOperatorTokens: Set<TokenType> = new Set([
+    tt.Increment, tt.Decrement
 ]);
 
 export const binaryOperatorTokens: Set<TokenType> = new Set([
