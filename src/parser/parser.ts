@@ -1,6 +1,7 @@
 import { Token } from '../tokeniser/tokens/token';
 import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
 import * as t from './ast/types';
+import { arrayExpressionToPattern, assignmentExpressionToPattern, expressionToPattern, objectExpressionToPattern, spreadElementToPattern } from './utils';
 
 export class Parser {
     private readonly tokens: Token[];
@@ -668,33 +669,17 @@ export class Parser {
                 if (expression.type == 'Identifier') {
                     return expression;
                 } else if (expression.type == 'AssignmentExpression') {
-                    if (expression.operator != '=') {
-                        throw new Error(`Unexpected assignment pattern operator ${expression.operator}, expected =`);
-                    }
-                    const pattern = expression as {[key: string]: any};
-                    pattern.type = 'AssignmentPattern';
-                    return pattern as t.AssignmentPattern;
+                    return assignmentExpressionToPattern(expression);
                 } else {
                     throw new Error(`Unexpected expression type ${expression.type}, expected Identifier or AssignmentPattern`);
                 }
             }
-            case tt.LeftBracket: {
-                const expression = this.parseArrayExpression() as {[key: string]: any};
-                // TODO: check elements are valid for an array pattern
-                expression.type = 'ArrayPattern';
-                return expression as t.ArrayPattern;
-            }
-            case tt.LeftBrace: {
-                const expression = this.parseObjectExpression() as {[key: string]: any};
-                // TODO: check elements are valid for an object pattern
-                // also convert spread to rest elements
-                expression.type = 'ObjectPattern';
-                return expression as t.ObjectPattern;
-            }
+            case tt.LeftBracket:
+                return arrayExpressionToPattern(this.parseArrayExpression());
+            case tt.LeftBrace:
+                return objectExpressionToPattern(this.parseObjectExpression());
             case tt.Ellipsis:
-                const expression = this.parseSpreadElement() as {[key: string]: any};
-                expression.type = 'RestElement';
-                return expression as t.RestElement;
+                return spreadElementToPattern(this.parseSpreadElement());
             default:
                 throw new Error(this.unexpectedTokenErrorMessage(nextToken));
         }
@@ -735,9 +720,10 @@ export class Parser {
      * @returns The assignment expression node.
      */
     private parseAssignmentExpression(left: t.Expression): t.AssignmentExpression {
+        const leftPattern = expressionToPattern(left);
         const operator = this.getNextToken(assignmentOperatorTokens);
         const right = this.parseExpression({ canBeSequence: false });
-        return t.assignmentExpression(operator.value, left, right);
+        return t.assignmentExpression(operator.value, leftPattern, right);
     }
 
     /**
