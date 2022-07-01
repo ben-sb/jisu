@@ -110,6 +110,8 @@ export class Parser {
                 return this.parseWhileStatement();
             case tt.Do:
                 return this.parseDoWhileStatement();
+            case tt.With:
+                return this.parseWithStatement();
             case tt.Break:
                 return this.parseBreakStatement();
             case tt.Continue:
@@ -372,6 +374,22 @@ export class Parser {
         this.getNextToken(tt.RightParenthesis);
 
         return t.doWhileStatement(body, test);
+    }
+
+    /**
+     * Parses a with statement.
+     * @returns The with statement node.
+     */
+    private parseWithStatement(): t.WithStatement {
+        this.getNextToken(tt.With);
+        
+        this.getNextToken(tt.LeftParenthesis);
+        const expression = this.parseExpression();
+        this.getNextToken(tt.RightParenthesis);
+
+        const body = this.parseStatement();
+
+        return t.withStatement(expression, body);
     }
     
     /**

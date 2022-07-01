@@ -240,8 +240,8 @@ export function objectExpression(properties: (ObjectProperty | ObjectMethod)[]):
 // statements
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | SwitchStatement | ForStatement 
-    | WhileStatement | DoWhileStatement | ReturnStatement | BreakStatement 
-    | ContinueStatement | FunctionDeclaration;
+    | WhileStatement | DoWhileStatement | WithStatement | ReturnStatement 
+    | BreakStatement  | ContinueStatement | FunctionDeclaration;
 
 export type BlockStatement = Node & {
     type: 'BlockStatement';
@@ -400,6 +400,19 @@ export function doWhileStatement(body: Statement, test: Expression): DoWhileStat
         type: 'DoWhileStatement',
         body,
         test
+    };
+}
+
+export type WithStatement = Node & {
+    type: 'WithStatement';
+    object: Expression;
+    body: Statement;
+}
+export function withStatement(object: Expression, body: Statement): WithStatement {
+    return {
+        type: 'WithStatement',
+        object,
+        body
     };
 }
 

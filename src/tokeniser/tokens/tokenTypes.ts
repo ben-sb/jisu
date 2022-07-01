@@ -49,6 +49,7 @@ export const tt: TokenTypes = {
     True: new TokenType('true'),
     Var: new TokenType('var'),
     While: new TokenType('while'),
+    With: new TokenType('with'),
 
     // operator tokens
     Comma: new TokenType(',', { precedence: 1 }),
