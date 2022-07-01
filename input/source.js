@@ -1,4 +1,1 @@
-with (a) {
-    20;
-}
-debugger;
+asd: 20;

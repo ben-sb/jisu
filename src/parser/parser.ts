@@ -122,6 +122,11 @@ export class Parser {
                 return this.parseReturnStatement();
             case tt.SemiColon:
                 return this.parseEmptyStatement();
+            case tt.Identifier: {
+                if (this.peekToken(1).type == tt.Colon) {
+                    return this.parseLabeledStatement();
+                }
+            }
             default:
                 return this.parseExpressionStatement();
         }
@@ -444,6 +449,14 @@ export class Parser {
     private parseEmptyStatement(): t.EmptyStatement {
         this.parseSemiColon();
         return t.emptyStatement();
+    }
+
+    private parseLabeledStatement(): t.LabeledStatement {
+        const label = this.parseIdentifier();
+        this.getNextToken(tt.Colon);
+        const statement = this.parseStatement();
+
+        return t.labeledStatement(label, statement);
     }
 
     /**

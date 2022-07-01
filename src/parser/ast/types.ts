@@ -241,7 +241,7 @@ export function objectExpression(properties: (ObjectProperty | ObjectMethod)[]):
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | SwitchStatement | ForStatement 
     | WhileStatement | DoWhileStatement | WithStatement | DebuggerStatement
-    | ReturnStatement | BreakStatement  | ContinueStatement 
+    | LabeledStatement | ReturnStatement | BreakStatement  | ContinueStatement 
     | FunctionDeclaration;
 
 export type BlockStatement = Node & {
@@ -423,6 +423,19 @@ export type DebuggerStatement = Node & {
 export function debuggerStatement(): DebuggerStatement {
     return {
         type: 'DebuggerStatement'
+    };
+}
+
+export type LabeledStatement = Node & {
+    type: 'LabeledStatement';
+    label: Identifier;
+    body: Statement;
+}
+export function labeledStatement(label: Identifier, body: Statement): LabeledStatement {
+    return {
+        type: 'LabeledStatement',
+        label,
+        body
     };
 }
 
