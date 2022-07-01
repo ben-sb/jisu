@@ -1,1 +1,1 @@
-asd: 20;
+throw a;

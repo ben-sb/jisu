@@ -45,7 +45,7 @@ export class Parser {
     private unexpectedTokenErrorMessage(token: Token, expectedType?: TokenType | Set<TokenType>): string {
         if (expectedType) {
             if (expectedType instanceof Set) {
-                return `Unexpected token ${token.value}, expected ${Array.from(expectedType).map(t => t.name).join(',')}`;
+                return `Unexpected token ${token.value}, expected ${Array.from(expectedType).map(t => t.name).join(', ')}`;
             } else {
                 return `Unexpected token ${token.value}, expected ${expectedType.name}`;
             }
@@ -65,8 +65,10 @@ export class Parser {
             ? this.tokens[this.advance()]
             : this.tokens[this.tokens.length - 1]; // EOF token
 
-        if (requiredType && token.type != requiredType) {
-            throw new Error(this.unexpectedTokenErrorMessage(token, requiredType));
+        if (requiredType) {
+            if ((requiredType instanceof Set && !requiredType.has(token.type)) || (!(requiredType instanceof Set) && token.type != requiredType)) {
+                throw new Error(this.unexpectedTokenErrorMessage(token, requiredType));
+            }
         }
         return token;
     }
@@ -696,7 +698,7 @@ export class Parser {
             } else if (nextToken.type == tt.Identifier) {
                 key = this.parseIdentifier();
 
-                if (key.name == 'get' || key.name == 'set' && this.peekToken().type == tt.Identifier) { // getter or setter
+                if ((key.name == 'get' || key.name == 'set') && this.peekToken().type == tt.Identifier) { // getter or setter
                     method = key.name;
                     key = this.parseIdentifier();
                     if (this.peekToken().type != tt.LeftParenthesis) {
