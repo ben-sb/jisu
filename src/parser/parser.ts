@@ -552,6 +552,24 @@ export class Parser {
         canBeGrouped = true, 
         canBeSequence = true
     }: ParseExpressionParams = {}): t.Expression {
+        const expression = this.parseExpression2(canBeGrouped);
+        const nextToken = this.peekToken();
+
+        if (canBeSequence && nextToken.type == tt.Comma) {
+            this.advance();
+            return this.parseSequenceExpression(expression);
+        } else {
+            return expression;
+        }
+    }
+
+    /**
+     * Second level of parsing an expression.
+     * @param canBeGrouped Whether it can be a grouped expression, i.e.
+     * a binary or logical expression (defaults to true).
+     * @returns 
+     */
+    private parseExpression2(canBeGrouped: boolean = true): t.Expression {
         const expression = this.parseExpressionInner();
         const nextToken = this.peekToken();
 
@@ -561,9 +579,6 @@ export class Parser {
             return this.parsePostfixUpdateExpression(expression);
         } else if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
             return this.parseGroupedExpression(expression);
-        } else if (canBeSequence && nextToken.type == tt.Comma) {
-            this.advance();
-            return this.parseSequenceExpression(expression);
         } else {
             return expression;
         }
@@ -676,7 +691,7 @@ export class Parser {
      */
     private parseAssignmentExpression(left: t.Expression): t.AssignmentExpression {
         const operator = this.getNextToken(assignmentOperatorTokens);
-        const right = this.parseExpression();
+        const right = this.parseExpression({ canBeSequence: false });
         return t.assignmentExpression(operator.value, left, right);
     }
 
@@ -751,7 +766,7 @@ export class Parser {
     private parseSequenceExpression(firstExpression: t.Expression): t.SequenceExpression {
         const expressions = [firstExpression];
         while (true) {
-            const nextExpression = this.parseExpression({ canBeGrouped: false, canBeSequence: false });
+            const nextExpression = this.parseExpression({ canBeSequence: false });
             expressions.push(nextExpression);
 
             if (this.peekToken().type == tt.Comma) {
