@@ -1,3 +1,1 @@
-async function* test() {
-    await 10;
-}
+const a = 5;

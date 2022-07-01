@@ -1,5 +1,5 @@
 import { Token } from '../tokeniser/tokens/token';
-import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens } from '../tokeniser/tokens/tokenTypes';
+import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
 import * as t from './ast/types';
 
 export class Parser {
@@ -95,11 +95,14 @@ export class Parser {
      */
     private parseStatement(): t.Statement {
         const token = this.peekToken();
+
+        if (variableDeclarationKindTokens.has(token.type)) {
+            return this.parseVariableDeclaration();
+        }
+
         switch (token.type) {
             case tt.LeftBrace:
                 return this.parseBlockStatement();
-            case tt.Var:
-                return this.parseVariableDeclaration();
             case tt.Function:
             case tt.Async:
                 return this.parseFunction(true) as t.FunctionDeclaration;
@@ -149,7 +152,7 @@ export class Parser {
      * @returns The variable declaration node.
      */
     private parseVariableDeclaration(): t.VariableDeclaration {
-        const kindToken = this.getNextToken(tt.Var);
+        const kindToken = this.getNextToken(variableDeclarationKindTokens);
 
         const declarators = [];
         while (true) {

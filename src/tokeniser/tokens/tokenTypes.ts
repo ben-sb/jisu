@@ -37,6 +37,7 @@ export const tt: TokenTypes = {
     Await: new TokenType('await'),
     Break: new TokenType('break'),
     Case: new TokenType('case'),
+    Const: new TokenType('const'),
     Continue: new TokenType('continue'),
     Debugger: new TokenType('debugger'),
     Default: new TokenType('default'),
@@ -46,6 +47,7 @@ export const tt: TokenTypes = {
     For: new TokenType('for'),
     Function: new TokenType('function'),
     If: new TokenType('if'),
+    Let: new TokenType('let'),
     Return: new TokenType('return'),
     Switch: new TokenType('switch'),
     This: new TokenType('this'),
@@ -109,6 +111,10 @@ export const tt: TokenTypes = {
     LeftParenthesis: new TokenType('(', { precedence: 19 }),
     RightParenthesis: new TokenType(')', { precedence: 19 })
 };
+
+export const variableDeclarationKindTokens: Set<TokenType> = new Set([
+    tt.Var, tt.Const, tt.Let
+]);
 
 export const booleanValueTokens: Set<TokenType> = new Set([
     tt.True, tt.False

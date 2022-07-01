@@ -324,7 +324,7 @@ export function variableDeclarator(id: Identifier, init: Expression): VariableDe
     };
 }
 
-export type VariableDeclarationKind = 'var';
+export type VariableDeclarationKind = 'var' | 'const' | 'let';
 export type VariableDeclaration = Node & {
     type: 'VariableDeclaration'
     kind: VariableDeclarationKind;
