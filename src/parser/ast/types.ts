@@ -20,7 +20,7 @@ export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | AssignmentExpression | UnaryExpression | UpdateExpression 
     | BinaryExpression  | ThisExpression | YieldExpression | AwaitExpression 
     | LogicalExpression | SequenceExpression | FunctionExpression 
-    | ArrayExpression | ObjectExpression;
+    | ArrayExpression | ObjectExpression | DoExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -290,6 +290,19 @@ export function objectExpression(properties: (ObjectProperty | ObjectMethod)[]):
     return {
         type: 'ObjectExpression',
         properties
+    };
+}
+
+export type DoExpression = Node & {
+    type: 'DoExpression';
+    body: BlockStatement;
+    async: boolean;
+}
+export function doExpression(body: BlockStatement, async: boolean): DoExpression {
+    return {
+        type: 'DoExpression',
+        body,
+        async
     };
 }
 

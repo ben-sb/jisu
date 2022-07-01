@@ -133,6 +133,8 @@ export class Parser {
             case tt.Identifier: {
                 if (this.peekToken(1).type == tt.Colon) {
                     return this.parseLabeledStatement();
+                } else {
+                    return this.parseExpressionStatement();
                 }
             }
             default:
@@ -582,8 +584,6 @@ export class Parser {
         }
 
         switch (token.type) {
-            case tt.Function:
-                return this.parseFunction(false) as t.FunctionExpression;
             case tt.Identifier:
                 return this.parseIdentifier();
             case tt.Number:
@@ -595,6 +595,8 @@ export class Parser {
                 return this.parseThisExpression();
             case tt.LeftParenthesis:
                 return this.parseParenthesisedExpression();
+            case tt.Function:
+                return this.parseFunction(false) as t.FunctionExpression;
             case tt.LeftBracket:
                 return this.parseArrayExpression();
             case tt.LeftBrace:
@@ -603,6 +605,15 @@ export class Parser {
                 return this.parseYieldExpression();
             case tt.Await:
                 return this.parseAwaitExpression();
+            case tt.Async: {
+                if (this.peekToken(1).type == tt.Do) {
+                    return this.parseDoExpression(true);
+                } else {
+                    return this.parseFunction(false) as t.FunctionExpression;
+                }
+            }
+            case tt.Do:
+                return this.parseDoExpression();
             default:
                 throw new Error(this.unexpectedTokenErrorMessage(token));
         }
@@ -868,5 +879,23 @@ export class Parser {
         const argument = this.parseExpression();
 
         return t.awaitExpression(argument);
+    }
+
+    /**
+     * Parses a do expression.
+     * @param isAsync Whether it is async.
+     * @returns The do expression node.
+     */
+    private parseDoExpression(isAsync: boolean = false): t.DoExpression {
+        let async = false;
+        if (isAsync) {
+            this.getNextToken(tt.Async);
+            async = true;
+        }
+
+        this.getNextToken(tt.Do);
+        const body = this.parseBlockStatement();
+
+        return t.doExpression(body, async);
     }
 }
