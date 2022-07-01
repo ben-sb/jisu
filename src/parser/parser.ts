@@ -1,5 +1,5 @@
 import { Token } from '../tokeniser/tokens/token';
-import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
+import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
 import * as t from './ast/types';
 
 export class Parser {
@@ -180,7 +180,7 @@ export class Parser {
 
         this.getNextToken(tt.Assignment);
         
-        const expression = this.parseExpression(false);
+        const expression = this.parseExpression(true, false);
 
         return t.variableDeclarator(identifier, expression);
     }
@@ -516,6 +516,10 @@ export class Parser {
         return t.emptyStatement();
     }
 
+    /**
+     * Parses a labeled statement.
+     * @returns The labeled statement node.
+     */
     private parseLabeledStatement(): t.LabeledStatement {
         const label = this.parseIdentifier();
         this.getNextToken(tt.Colon);
@@ -536,16 +540,24 @@ export class Parser {
 
     /**
      * Parses an expression.
-     * @param canBeSequence Whether it can be a sequence expression (defaults to true).
+     * @param canBeGrouped Whether it can be a grouped expression, i.e
+     * binary or logical expression (defaults to true).
+     * @param canBeSequence Whether it can be a sequence expression (defaults 
+     * to true).
      * @returns The expression node.
      */
-    private parseExpression(canBeSequence: boolean = true): t.Expression {
+    private parseExpression(
+        canBeGrouped: boolean = true,
+        canBeSequence: boolean = true
+    ): t.Expression {
         const expression = this.parseExpressionInner();
         const nextToken = this.peekToken();
 
         if (assignmentOperatorTokens.has(nextToken.type)) {
             return this.parseAssignmentExpression(expression);
-        } else if (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type)) {
+        } else if (updateOperatorTokens.has(nextToken.type)) {
+            return this.parsePostfixUpdateExpression(expression);
+        } else if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
             return this.parseGroupedExpression(expression);
         } else if (canBeSequence && nextToken.type == tt.Comma) {
             this.advance();
@@ -565,6 +577,8 @@ export class Parser {
 
         if (unaryOperatorTokens.has(token.type)) {
             return this.parseUnaryExpression();
+        } else if (updateOperatorTokens.has(token.type)) {
+            return this.parsePrefixUpdateExpression();
         }
 
         switch (token.type) {
@@ -654,6 +668,26 @@ export class Parser {
     }
 
     /**
+     * Parses a prefix update expression.
+     * @returns The update expression node.
+     */
+    private parsePrefixUpdateExpression(): t.UpdateExpression {
+        const operator = this.getNextToken(updateOperatorTokens);
+        const argument = this.parseExpression();
+        return t.updateExpression(operator.value, argument, true);
+    }
+
+    /**
+     * Parses a postfix update expression.
+     * @param argument The argument of the update expression.
+     * @returns The update expression node.
+     */
+    private parsePostfixUpdateExpression(argument: t.Expression): t.UpdateExpression {
+        const operator = this.getNextToken(updateOperatorTokens);
+        return t.updateExpression(operator.value, argument, false);
+    }
+
+    /**
      * Parses a grouped expression. This is either a binary or logical 
      * expression.
      * @param firstExpression The first expression in the grouped expression.
@@ -668,7 +702,7 @@ export class Parser {
             const operator = lookahead.type;
             const operatorPrecedence = operator.precedence as number;
             this.advance();
-            let right = this.parseExpressionInner();
+            let right = this.parseExpression(false, false);
             
             lookahead = this.peekToken();
             while (groupedOperatorTokens.has(lookahead.type) && (lookahead.type.precedence! > operatorPrecedence
@@ -694,7 +728,7 @@ export class Parser {
     private parseSequenceExpression(firstExpression: t.Expression): t.SequenceExpression {
         const expressions = [firstExpression];
         while (true) {
-            const nextExpression = this.parseExpressionInner();
+            const nextExpression = this.parseExpression(false, false);
             expressions.push(nextExpression);
 
             if (this.peekToken().type == tt.Comma) {
@@ -732,7 +766,7 @@ export class Parser {
                 elements.push(null);
                 this.advance();
             } else {
-                elements.push(this.parseExpression(false));
+                elements.push(this.parseExpression(true, false));
                 if (this.peekToken().type == tt.Comma) {
                     this.advance();
                 }
@@ -785,7 +819,7 @@ export class Parser {
             nextToken = this.peekToken();
             if (nextToken.type == tt.Colon) {
                 this.getNextToken();
-                const value = this.parseExpression(false);
+                const value = this.parseExpression(true, false);
                 property = t.objectProperty(key, value, computed);
             } else if (nextToken.type == tt.LeftParenthesis) {
                 const params = this.parseFunctionParams();
