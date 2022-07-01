@@ -582,7 +582,7 @@ export const OTHER_CHARS_KEY = {};
  * Allows for more efficient token matching.
  */
 export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
-    ['a', [stringMatcher(tt.Async, 'async')]],
+    ['a', [stringMatcher(tt.Async, 'async'), stringMatcher(tt.Await, 'await')]],
     ['b', [stringMatcher(tt.Break, 'break')]],
     ['c', [stringMatcher(tt.Case, 'case'), stringMatcher(tt.Continue, 'continue')]],
     ['d', [stringMatcher(tt.Debugger, 'debugger'), stringMatcher(tt.Default, 'default'), stringMatcher(tt.Delete, 'delete'), stringMatcher(tt.Do, 'do')]],
@@ -594,6 +594,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['t', [stringMatcher(tt.This, 'this'), stringMatcher(tt.Throw, 'throw'), stringMatcher(tt.True, 'true'), stringMatcher(tt.Typeof, 'typeof')]],
     ['v', [stringMatcher(tt.Var, 'var'), stringMatcher(tt.Void, 'void')]],
     ['w', [stringMatcher(tt.While, 'while'), stringMatcher(tt.With, 'with')]],
+    ['y', [stringMatcher(tt.Yield, 'yield')]],
 
     [',', [characterMatcher(tt.Comma, ',')]],
     ['+', [matchPlusTokens]],

@@ -535,6 +535,10 @@ export class Parser {
                 return this.parseArrayExpression();
             case tt.LeftBrace:
                 return this.parseObjectExpression();
+            case tt.Yield:
+                return this.parseYieldExpression();
+            case tt.Await:
+                return this.parseAwaitExpression();
             default:
                 throw new Error(this.unexpectedTokenErrorMessage(token));
         }
@@ -749,5 +753,36 @@ export class Parser {
         this.getNextToken(tt.RightBrace);
 
         return t.objectExpression(properties);
+    }
+
+    /**
+     * Parses a yield expression.
+     * @returns The yield expression node.
+     */
+    private parseYieldExpression(): t.YieldExpression {
+        this.getNextToken(tt.Yield);
+
+        let delegate = false;
+        if (this.peekToken().type == tt.Multiply) {
+            delegate = true;
+            this.advance();
+        }
+
+        // TODO: check for semi colon or line break
+
+        const argument = this.parseExpression();
+        
+        return t.yieldExpression(argument, delegate);
+    }
+    
+    /**
+     * Parses an await expression.
+     * @returns The await expression.
+     */
+    private parseAwaitExpression(): t.AwaitExpression {
+        this.getNextToken(tt.Await);
+        const argument = this.parseExpression();
+
+        return t.awaitExpression(argument);
     }
 }

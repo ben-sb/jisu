@@ -18,8 +18,9 @@ type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 // expressions
 export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | AssignmentExpression | UnaryExpression | BinaryExpression 
-    | ThisExpression | LogicalExpression | SequenceExpression 
-    | FunctionExpression | ArrayExpression | ObjectExpression;
+    | ThisExpression | YieldExpression | AwaitExpression | LogicalExpression 
+    | SequenceExpression | FunctionExpression | ArrayExpression 
+    | ObjectExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -60,6 +61,33 @@ export type ThisExpression = Node & {
 export function thisExpression(): ThisExpression {
     return {
         type: 'ThisExpression'
+    };
+}
+
+export type YieldExpression = Node & {
+    type: 'YieldExpression';
+    argument: Expression | null;
+    delegate: boolean
+}
+export function yieldExpression(
+    argument: Expression | null | undefined, 
+    delegate: boolean
+): YieldExpression {
+    return {
+        type: 'YieldExpression',
+        argument: argument || null,
+        delegate
+    };
+}
+
+export type AwaitExpression = Node & {
+    type: 'AwaitExpression';
+    argument: Expression;
+}
+export function awaitExpression(argument: Expression): AwaitExpression {
+    return {
+        type: 'AwaitExpression',
+        argument
     };
 }
 

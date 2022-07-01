@@ -34,6 +34,7 @@ export const tt: TokenTypes = {
 
     // keywords
     Async: new TokenType('async'),
+    Await: new TokenType('await'),
     Break: new TokenType('break'),
     Case: new TokenType('case'),
     Continue: new TokenType('continue'),
@@ -52,6 +53,7 @@ export const tt: TokenTypes = {
     Var: new TokenType('var'),
     While: new TokenType('while'),
     With: new TokenType('with'),
+    Yield: new TokenType('yield'),
 
     // operator tokens
     Comma: new TokenType(',', { precedence: 1 }),
