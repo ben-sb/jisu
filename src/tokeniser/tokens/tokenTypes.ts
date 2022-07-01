@@ -33,7 +33,7 @@ export const tt: TokenTypes = {
     SemiColon: new TokenType(';'),
 
     // keywords
-    If: new TokenType('if'),
+    Async: new TokenType('async'),
     Break: new TokenType('break'),
     Case: new TokenType('case'),
     Continue: new TokenType('continue'),
@@ -44,6 +44,7 @@ export const tt: TokenTypes = {
     False: new TokenType('false'),
     For: new TokenType('for'),
     Function: new TokenType('function'),
+    If: new TokenType('if'),
     Return: new TokenType('return'),
     Switch: new TokenType('switch'),
     This: new TokenType('this'),

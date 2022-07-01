@@ -1,1 +1,3 @@
-throw a;
+async function* test() {
+
+}

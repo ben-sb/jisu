@@ -101,6 +101,7 @@ export class Parser {
             case tt.Var:
                 return this.parseVariableDeclaration();
             case tt.Function:
+            case tt.Async:
                 return this.parseFunction(true) as t.FunctionDeclaration;
             case tt.If:
                 return this.parseIfStatement();
@@ -185,7 +186,19 @@ export class Parser {
      * @returns The function declaration or expression node.
      */
     private parseFunction(isDeclaration: boolean): t.FunctionDeclaration | t.FunctionExpression {
+        let async = false;
+        if (this.peekToken().type == tt.Async) {
+            async = true;
+            this.advance();
+        }
+        
         this.getNextToken(tt.Function);
+
+        let generator = false;
+        if (this.peekToken().type == tt.Multiply) {
+            generator = true;
+            this.advance();
+        }
         
         const identifier = this.peekToken().type == tt.LeftParenthesis
             ? null
@@ -198,8 +211,8 @@ export class Parser {
         const body = this.parseBlockStatement();
 
         return isDeclaration
-            ? t.functionDeclaration(identifier as t.Identifier, params, body)
-            : t.functionExpression(identifier, params, body);
+            ? t.functionDeclaration(identifier as t.Identifier, params, body, generator, async)
+            : t.functionExpression(identifier, params, body, generator, async);
     }
 
     /**

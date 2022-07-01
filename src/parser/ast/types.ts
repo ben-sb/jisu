@@ -162,13 +162,17 @@ export type FunctionExpression = OmitType<Function> & {
 export function functionExpression(
     id: Identifier | null | undefined,
     params: Identifier[],
-    body: BlockStatement
+    body: BlockStatement,
+    generator: boolean = false,
+    async: boolean = false
 ): FunctionExpression {
     return {
         type: 'FunctionExpression',
         id: id || null,
         params,
-        body
+        body,
+        generator,
+        async
     };
 }
 
@@ -212,6 +216,8 @@ export function objectMethod(
     key: Expression,
     params: Identifier[],
     body: BlockStatement,
+    generator: boolean = false,
+    async: boolean = false,
     computed: boolean = false
 
 ): ObjectMethod {
@@ -222,6 +228,8 @@ export function objectMethod(
         id: null,
         params,
         body,
+        generator,
+        async,
         computed
     };
 }
@@ -473,6 +481,8 @@ export type Function = Node & {
     id: Identifier | null;
     params: Identifier[];
     body: BlockStatement;
+    generator: boolean;
+    async: boolean;
 }
 
 export type FunctionDeclaration = OmitType<Function> & {
@@ -482,12 +492,16 @@ export type FunctionDeclaration = OmitType<Function> & {
 export function functionDeclaration(
     id: Identifier, 
     params: Identifier[],
-    body: BlockStatement
+    body: BlockStatement,
+    generator: boolean = false,
+    async: boolean = false
 ): FunctionDeclaration {
     return {
         type: 'FunctionDeclaration',
         id,
         params,
-        body
+        body,
+        generator,
+        async
     };
 }

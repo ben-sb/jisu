@@ -582,6 +582,7 @@ export const OTHER_CHARS_KEY = {};
  * Allows for more efficient token matching.
  */
 export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
+    ['a', [stringMatcher(tt.Async, 'async')]],
     ['b', [stringMatcher(tt.Break, 'break')]],
     ['c', [stringMatcher(tt.Case, 'case'), stringMatcher(tt.Continue, 'continue')]],
     ['d', [stringMatcher(tt.Debugger, 'debugger'), stringMatcher(tt.Default, 'default'), stringMatcher(tt.Delete, 'delete'), stringMatcher(tt.Do, 'do')]],
