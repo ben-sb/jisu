@@ -629,6 +629,19 @@ export class Parser {
     }
 
     /**
+     * Parses a keyword as an identifier. Used within object
+     * expressions.
+     * @returns The identifier node.
+     */
+    private parseKeywordAsIdentifier(): t.Identifier {
+        const token = this.getNextToken();
+        if (!token.type.isKeyword) {
+            throw new Error(`Token ${token.type.name} is not a keyword`);
+        }
+        return t.identifier(token.type.name);
+    }
+
+    /**
      * Parses a numeric literal.
      * @returns The numeric literal node.
      */
@@ -827,12 +840,17 @@ export class Parser {
             key = this.parseExpression();
             this.getNextToken(tt.RightBracket);
             computed = true;
-        } else if (nextToken.type == tt.Identifier) {
-            key = this.parseIdentifier();
+        } else if (nextToken.type == tt.Identifier || nextToken.type.isKeyword) {
+            key = nextToken.type == tt.Identifier
+                ? this.parseIdentifier()
+                : this.parseKeywordAsIdentifier();
 
-            if ((key.name == 'get' || key.name == 'set') && this.peekToken().type == tt.Identifier) { // getter or setter
+            nextToken = this.peekToken();
+            if ((key.name == 'get' || key.name == 'set') && (nextToken.type == tt.Identifier || nextToken.type.isKeyword)) { // getter or setter
                 method = key.name;
-                key = this.parseIdentifier();
+                key = nextToken.type == tt.Identifier
+                    ? this.parseIdentifier()
+                    : this.parseKeywordAsIdentifier();
                 if (this.peekToken().type != tt.LeftParenthesis) {
                     throw new Error(this.unexpectedTokenErrorMessage(this.peekToken(), tt.LeftParenthesis));
                 }

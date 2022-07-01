@@ -1,6 +1,3 @@
 var a = {
-    a: 10,
-    b() {
-
-    }
+    undefined: 20
 };
