@@ -116,6 +116,8 @@ export class Parser {
                 return this.parseWhileStatement();
             case tt.Do:
                 return this.parseDoWhileStatement();
+            case tt.Try:
+                return this.parseTryStatement();
             case tt.With:
                 return this.parseWithStatement();
             case tt.Debugger:
@@ -399,6 +401,51 @@ export class Parser {
         this.getNextToken(tt.RightParenthesis);
 
         return t.doWhileStatement(body, test);
+    }
+
+    /**
+     * Parses a try statement.
+     * @returns The try statement node.
+     */
+    private parseTryStatement(): t.TryStatement {
+        this.getNextToken(tt.Try);
+        const block = this.parseBlockStatement();
+
+        let handler: t.CatchClause | null = null;
+        if (this.peekToken().type == tt.Catch) {
+            handler = this.parseCatchClause();
+        }
+
+        let finalizer: t.BlockStatement | null = null;
+        if (this.peekToken().type == tt.Finally) {
+            this.advance();
+            finalizer = this.parseBlockStatement();
+        }
+
+        if (!handler && !finalizer) {
+            throw new Error('Missing catch or finally after try');
+        }
+
+        return t.tryStatement(block, handler, finalizer);
+    }
+
+    /**
+     * Parses a catch clause.
+     * @returns The catch clause node.
+     */
+    private parseCatchClause(): t.CatchClause {
+        this.getNextToken(tt.Catch);
+
+        let param: t.Identifier | null = null;
+        if (this.peekToken().type == tt.LeftParenthesis) {
+            this.advance();
+            param = this.parseIdentifier();
+            this.getNextToken(tt.RightParenthesis);
+        }
+
+        const body = this.parseBlockStatement();
+
+        return t.catchClause(param, body);
     }
 
     /**

@@ -276,9 +276,9 @@ export function objectExpression(properties: (ObjectProperty | ObjectMethod)[]):
 // statements
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | SwitchStatement | ForStatement 
-    | WhileStatement | DoWhileStatement | WithStatement | DebuggerStatement
-    | LabeledStatement | ReturnStatement | BreakStatement  | ContinueStatement 
-    | FunctionDeclaration;
+    | WhileStatement | DoWhileStatement | TryStatement | WithStatement 
+    | DebuggerStatement | LabeledStatement | ReturnStatement | BreakStatement 
+    | ContinueStatement | FunctionDeclaration;
 
 export type BlockStatement = Node & {
     type: 'BlockStatement';
@@ -437,6 +437,38 @@ export function doWhileStatement(body: Statement, test: Expression): DoWhileStat
         type: 'DoWhileStatement',
         body,
         test
+    };
+}
+
+export type CatchClause = Node & {
+    type: 'CatchClause';
+    param: Identifier | null;
+    body: BlockStatement;
+}
+export function catchClause(param: Identifier | null, body: BlockStatement): CatchClause {
+    return {
+        type: 'CatchClause',
+        param,
+        body
+    };
+}
+
+export type TryStatement = Node & {
+    type: 'TryStatement';
+    block: BlockStatement;
+    handler: CatchClause | null;
+    finalizer: BlockStatement | null;
+}
+export function tryStatement(
+    block: BlockStatement,
+    handler: CatchClause | null | undefined,
+    finalizer: BlockStatement | null | undefined
+): TryStatement {
+    return {
+        type: 'TryStatement',
+        block,
+        handler: handler || null,
+        finalizer: finalizer || null
     };
 }
 

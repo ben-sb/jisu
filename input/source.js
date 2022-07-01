@@ -1,1 +1,7 @@
-const a = 5;
+try {
+    10;
+} catch (a) {
+    20;
+} finally {
+    30;
+}
