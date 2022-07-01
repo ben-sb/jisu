@@ -112,6 +112,8 @@ export class Parser {
                 return this.parseDoWhileStatement();
             case tt.With:
                 return this.parseWithStatement();
+            case tt.Debugger:
+                return this.parseDebuggerStatement();
             case tt.Break:
                 return this.parseBreakStatement();
             case tt.Continue:
@@ -390,6 +392,16 @@ export class Parser {
         const body = this.parseStatement();
 
         return t.withStatement(expression, body);
+    }
+
+    /**
+     * Parses a debugger statement.
+     * @returns The debugger statement node.
+     */
+    private parseDebuggerStatement(): t.DebuggerStatement {
+        this.getNextToken(tt.Debugger);
+        this.parseSemiColon();
+        return t.debuggerStatement();
     }
     
     /**

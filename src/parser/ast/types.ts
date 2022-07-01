@@ -240,8 +240,9 @@ export function objectExpression(properties: (ObjectProperty | ObjectMethod)[]):
 // statements
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | SwitchStatement | ForStatement 
-    | WhileStatement | DoWhileStatement | WithStatement | ReturnStatement 
-    | BreakStatement  | ContinueStatement | FunctionDeclaration;
+    | WhileStatement | DoWhileStatement | WithStatement | DebuggerStatement
+    | ReturnStatement | BreakStatement  | ContinueStatement 
+    | FunctionDeclaration;
 
 export type BlockStatement = Node & {
     type: 'BlockStatement';
@@ -413,6 +414,15 @@ export function withStatement(object: Expression, body: Statement): WithStatemen
         type: 'WithStatement',
         object,
         body
+    };
+}
+
+export type DebuggerStatement = Node & {
+    type: 'DebuggerStatement';
+}
+export function debuggerStatement(): DebuggerStatement {
+    return {
+        type: 'DebuggerStatement'
     };
 }
 

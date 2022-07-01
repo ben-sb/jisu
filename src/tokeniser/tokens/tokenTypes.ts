@@ -37,6 +37,7 @@ export const tt: TokenTypes = {
     Break: new TokenType('break'),
     Case: new TokenType('case'),
     Continue: new TokenType('continue'),
+    Debugger: new TokenType('debugger'),
     Default: new TokenType('default'),
     Do: new TokenType('do'),
     Else: new TokenType('else'),
