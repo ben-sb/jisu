@@ -632,6 +632,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['}', [characterMatcher(tt.RightBrace, '}')]],
     [':', [characterMatcher(tt.Colon, ':')]],
     [';', [characterMatcher(tt.SemiColon, ';')]],
+    ['.', [stringMatcher(tt.Ellipsis, '...')]],
 
     // matches all other characters
     [OTHER_CHARS_KEY, [

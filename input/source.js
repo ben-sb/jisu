@@ -1,3 +1,1 @@
-var a = {
-    undefined: 20
-};
+var a = [...a];

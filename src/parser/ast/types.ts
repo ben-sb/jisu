@@ -226,9 +226,9 @@ export function functionExpression(
 
 export type ArrayExpression = Node & {
     type: 'ArrayExpression';
-    elements: (Expression | null)[];
+    elements: (Expression | SpreadElement | null)[];
 }
-export function arrayExpression(elements: (Expression | null)[]): ArrayExpression {
+export function arrayExpression(elements: (Expression | SpreadElement | null)[]): ArrayExpression {
     return {
         type: 'ArrayExpression',
         elements
@@ -284,9 +284,9 @@ export function objectMethod(
 
 export type ObjectExpression = Node & {
     type: 'ObjectExpression';
-    properties: (ObjectProperty | ObjectMethod)[];
+    properties: (ObjectProperty | ObjectMethod | SpreadElement)[];
 }
-export function objectExpression(properties: (ObjectProperty | ObjectMethod)[]): ObjectExpression {
+export function objectExpression(properties: (ObjectProperty | ObjectMethod | SpreadElement)[]): ObjectExpression {
     return {
         type: 'ObjectExpression',
         properties
@@ -303,6 +303,17 @@ export function doExpression(body: BlockStatement, async: boolean): DoExpression
         type: 'DoExpression',
         body,
         async
+    };
+}
+
+export type SpreadElement = Node & {
+    type: 'SpreadElement';
+    argument: Expression;
+}
+export function spreadElement(argument: Expression): SpreadElement {
+    return {
+        type: 'SpreadElement',
+        argument
     };
 }
 

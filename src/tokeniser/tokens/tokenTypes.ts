@@ -36,6 +36,7 @@ export const tt: TokenTypes = {
     SemiColon: new TokenType(';'),
     Increment: new TokenType('++'),
     Decrement: new TokenType('--'),
+    Ellipsis: new TokenType('...'),
 
     // keywords
     Async: new TokenType('async', { isKeyword: true }),

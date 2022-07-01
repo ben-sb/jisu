@@ -182,7 +182,7 @@ export class Parser {
 
         this.getNextToken(tt.Assignment);
         
-        const expression = this.parseExpression(true, false);
+        const expression = this.parseExpression({ canBeSequence: false });
 
         return t.variableDeclarator(identifier, expression);
     }
@@ -548,10 +548,10 @@ export class Parser {
      * to true).
      * @returns The expression node.
      */
-    private parseExpression(
-        canBeGrouped: boolean = true,
-        canBeSequence: boolean = true
-    ): t.Expression {
+    private parseExpression({ 
+        canBeGrouped = true, 
+        canBeSequence = true
+    }: ParseExpressionParams = {}): t.Expression {
         const expression = this.parseExpressionInner();
         const nextToken = this.peekToken();
 
@@ -629,8 +629,7 @@ export class Parser {
     }
 
     /**
-     * Parses a keyword as an identifier. Used within object
-     * expressions.
+     * Parses a keyword as an identifier. Used within object properties.
      * @returns The identifier node.
      */
     private parseKeywordAsIdentifier(): t.Identifier {
@@ -726,7 +725,7 @@ export class Parser {
             const operator = lookahead.type;
             const operatorPrecedence = operator.precedence as number;
             this.advance();
-            let right = this.parseExpression(false, false);
+            let right = this.parseExpression({ canBeGrouped: false, canBeSequence: false });
             
             lookahead = this.peekToken();
             while (groupedOperatorTokens.has(lookahead.type) && (lookahead.type.precedence! > operatorPrecedence
@@ -752,7 +751,7 @@ export class Parser {
     private parseSequenceExpression(firstExpression: t.Expression): t.SequenceExpression {
         const expressions = [firstExpression];
         while (true) {
-            const nextExpression = this.parseExpression(false, false);
+            const nextExpression = this.parseExpression({ canBeGrouped: false, canBeSequence: false });
             expressions.push(nextExpression);
 
             if (this.peekToken().type == tt.Comma) {
@@ -763,6 +762,16 @@ export class Parser {
         }
 
         return t.sequenceExpression(expressions);
+    }
+
+    /**
+     * Parses a spread element.
+     * @returns The spread element node.
+     */
+    private parseSpreadElement(): t.SpreadElement {
+        this.getNextToken(tt.Ellipsis);
+        const expression = this.parseExpression({ canBeSequence: false });
+        return t.spreadElement(expression);
     }
 
     /**
@@ -790,7 +799,10 @@ export class Parser {
                 elements.push(null);
                 this.advance();
             } else {
-                elements.push(this.parseExpression(true, false));
+                const element = this.peekToken().type == tt.Ellipsis
+                    ? this.parseSpreadElement()
+                    : this.parseExpression({ canBeSequence: false });
+                elements.push(element);
                 if (this.peekToken().type == tt.Comma) {
                     this.advance();
                 } else {
@@ -829,7 +841,7 @@ export class Parser {
      * Parses an object member.
      * @returns The object property or method node.
      */
-    private parseObjectMember(): t.ObjectProperty | t.ObjectMethod {
+    private parseObjectMember(): t.ObjectProperty | t.ObjectMethod | t.SpreadElement {
         let key: t.Expression;
         let computed = false;
         let method: 'get' | 'set' | undefined;
@@ -858,6 +870,8 @@ export class Parser {
                 this.advance();
                 return t.objectProperty(key, key, false, true);
             }
+        } else if (nextToken.type == tt.Ellipsis) {
+            return this.parseSpreadElement();
         } else {
             throw new Error(this.unexpectedTokenErrorMessage(nextToken));
         }
@@ -865,7 +879,7 @@ export class Parser {
         nextToken = this.peekToken();
         if (nextToken.type == tt.Colon) {
             this.getNextToken();
-            const value = this.parseExpression(true, false);
+            const value = this.parseExpression({ canBeSequence: false });
             return t.objectProperty(key, value, computed);
         } else if (nextToken.type == tt.LeftParenthesis) {
             const params = this.parseFunctionParams();
@@ -924,4 +938,9 @@ export class Parser {
 
         return t.doExpression(body, async);
     }
+}
+
+interface ParseExpressionParams {
+    canBeGrouped?: boolean;
+    canBeSequence?: boolean;
 }
