@@ -1,3 +1,1 @@
-function test(a, b, c) {
-
-}
+var [a] = 5;

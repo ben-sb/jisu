@@ -178,13 +178,13 @@ export class Parser {
      * @returns The variable declarator node.
      */
     private parseVariableDeclarator(): t.VariableDeclarator {
-        const identifier = this.parseIdentifier();
+        const pattern = this.parsePattern();
 
         this.getNextToken(tt.Assignment);
         
         const expression = this.parseExpression({ canBeSequence: false });
 
-        return t.variableDeclarator(identifier, expression);
+        return t.variableDeclarator(pattern, expression);
     }
 
     /**
@@ -226,12 +226,12 @@ export class Parser {
      * Parses function parameters.
      * @returns The identifier nodes.
      */
-    private parseFunctionParams(): t.Identifier[] {
+    private parseFunctionParams(): t.Pattern[] {
         this.getNextToken(tt.LeftParenthesis);
 
         const params = [];
         while (this.peekToken().type != tt.RightParenthesis) {
-            params.push(this.parseIdentifier());
+            params.push(this.parsePattern());
             if (this.peekToken().type == tt.Comma) {
                 this.advance();
             } else {
@@ -656,6 +656,51 @@ export class Parser {
     }
 
     /**
+     * Parses a pattern.
+     * @returns The pattern node.
+     */
+    private parsePattern(): t.Pattern {
+        const nextToken = this.peekToken();
+
+        switch (nextToken.type) {
+            case tt.Identifier: {
+                const expression = this.parseExpression({ canBeSequence: false });
+                if (expression.type == 'Identifier') {
+                    return expression;
+                } else if (expression.type == 'AssignmentExpression') {
+                    if (expression.operator != '=') {
+                        throw new Error(`Unexpected assignment pattern operator ${expression.operator}, expected =`);
+                    }
+                    const pattern = expression as {[key: string]: any};
+                    pattern.type = 'AssignmentPattern';
+                    return pattern as t.AssignmentPattern;
+                } else {
+                    throw new Error(`Unexpected expression type ${expression.type}, expected Identifier or AssignmentPattern`);
+                }
+            }
+            case tt.LeftBracket: {
+                const expression = this.parseArrayExpression() as {[key: string]: any};
+                // TODO: check elements are valid for an array pattern
+                expression.type = 'ArrayPattern';
+                return expression as t.ArrayPattern;
+            }
+            case tt.LeftBrace: {
+                const expression = this.parseObjectExpression() as {[key: string]: any};
+                // TODO: check elements are valid for an object pattern
+                // also convert spread to rest elements
+                expression.type = 'ObjectPattern';
+                return expression as t.ObjectPattern;
+            }
+            case tt.Ellipsis:
+                const expression = this.parseSpreadElement() as {[key: string]: any};
+                expression.type = 'RestElement';
+                return expression as t.RestElement;
+            default:
+                throw new Error(this.unexpectedTokenErrorMessage(nextToken));
+        }
+    }
+
+    /**
      * Parses a numeric literal.
      * @returns The numeric literal node.
      */
@@ -881,8 +926,7 @@ export class Parser {
                 if (this.peekToken().type != tt.LeftParenthesis) {
                     throw new Error(this.unexpectedTokenErrorMessage(this.peekToken(), tt.LeftParenthesis));
                 }
-            } else if (this.peekToken().type == tt.Comma) { // shorthand property
-                this.advance();
+            } else if (nextToken.type == tt.Comma || nextToken.type == tt.RightBrace) { // shorthand property
                 return t.objectProperty(key, key, false, true);
             }
         } else if (nextToken.type == tt.Ellipsis) {

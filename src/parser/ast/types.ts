@@ -97,12 +97,12 @@ export type AssignmentOperator = '=' | '+=' | '-=' | '*=' | '/='
 export type AssignmentExpression = Node & {
     type: 'AssignmentExpression';
     operator: AssignmentOperator;
-    left: Expression;
+    left: Expression | Pattern;
     right: Expression;
 }
 export function assignmentExpression(
     operator: AssignmentOperator, 
-    left: Expression,
+    left: Expression | Pattern,
     right: Expression
 ): AssignmentExpression {
     return {
