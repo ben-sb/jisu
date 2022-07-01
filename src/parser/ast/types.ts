@@ -209,7 +209,7 @@ export type FunctionExpression = OmitType<Function> & {
 }
 export function functionExpression(
     id: Identifier | null | undefined,
-    params: Identifier[],
+    params: Pattern[],
     body: BlockStatement,
     generator: boolean = false,
     async: boolean = false
@@ -262,7 +262,7 @@ export type ObjectMethod = OmitType<Function> & OmitType<ObjectMember> & {
 export function objectMethod(
     kind: 'get' | 'set' | 'method',
     key: Expression,
-    params: Identifier[],
+    params: Pattern[],
     body: BlockStatement,
     generator: boolean = false,
     async: boolean = false,
@@ -306,6 +306,60 @@ export function doExpression(body: BlockStatement, async: boolean): DoExpression
     };
 }
 
+// patterns
+export type Pattern = Identifier | ObjectPattern | ArrayPattern
+    | RestElement | AssignmentPattern;
+
+export type AssignmentProperty = ObjectProperty & {
+    value: Pattern;
+}
+export type ObjectPattern = Node & {
+    type: 'ObjectPattern';
+    properties: (AssignmentProperty | RestElement)[];
+}
+export function objectPattern(properties: (AssignmentProperty | RestElement)[]): ObjectPattern {
+    return {
+        type: 'ObjectPattern',
+        properties
+    };
+}
+
+export type ArrayPattern = Node & {
+    type: 'ArrayPattern';
+    elements: (Pattern | null)[];
+}
+export function arrayPattern(elements: (Pattern | null)[]): ArrayPattern {
+    return {
+        type: 'ArrayPattern',
+        elements
+    };
+}
+
+export type RestElement = Node & {
+    type: 'RestElement';
+    argument: Pattern;
+}
+export function restElement(argument: Pattern): RestElement {
+    return {
+        type: 'RestElement',
+        argument
+    };
+}
+
+export type AssignmentPattern = Node & {
+    type: 'AssignmentPattern';
+    left: Pattern;
+    right: Expression;
+}
+export function assignmentPattern(left: Pattern, right: Expression): AssignmentPattern {
+    return {
+        type: 'AssignmentPattern',
+        left,
+        right
+    };
+}
+
+// misc
 export type SpreadElement = Node & {
     type: 'SpreadElement';
     argument: Expression;
@@ -357,10 +411,10 @@ export function expressionStatement(expression: Expression): ExpressionStatement
 
 export type VariableDeclarator = Node & {
     type: 'VariableDeclarator';
-    id: Identifier;
+    id: Pattern;
     init: Expression;
 }
-export function variableDeclarator(id: Identifier, init: Expression): VariableDeclarator {
+export function variableDeclarator(id: Pattern, init: Expression): VariableDeclarator {
     return {
         type: 'VariableDeclarator',
         id,
@@ -486,10 +540,10 @@ export function doWhileStatement(body: Statement, test: Expression): DoWhileStat
 
 export type CatchClause = Node & {
     type: 'CatchClause';
-    param: Identifier | null;
+    param: Pattern | null;
     body: BlockStatement;
 }
-export function catchClause(param: Identifier | null, body: BlockStatement): CatchClause {
+export function catchClause(param: Pattern | null, body: BlockStatement): CatchClause {
     return {
         type: 'CatchClause',
         param,
@@ -583,7 +637,7 @@ export function continueStatement(): ContinueStatement {
 export type Function = Node & {
     type: 'Function',
     id: Identifier | null;
-    params: Identifier[];
+    params: Pattern[];
     body: BlockStatement;
     generator: boolean;
     async: boolean;
@@ -595,7 +649,7 @@ export type FunctionDeclaration = OmitType<Function> & {
 }
 export function functionDeclaration(
     id: Identifier, 
-    params: Identifier[],
+    params: Pattern[],
     body: BlockStatement,
     generator: boolean = false,
     async: boolean = false
