@@ -1,5 +1,6 @@
 export class TokenType {
     name: string;
+    isKeyword?: boolean;
     precedence?: number;
     rightAssociative?: boolean;
 
@@ -10,12 +11,14 @@ export class TokenType {
      */
     constructor(name: string, options: TokenOptions = {}) {
         this.name = name;
+        this.isKeyword = options.isKeyword;
         this.precedence = options.precedence;
         this.rightAssociative = options.rightAssociative;
     }
 }
 
 interface TokenOptions {
+    isKeyword?: boolean;
     precedence?: number;
     rightAssociative?: boolean;
 }
@@ -35,36 +38,36 @@ export const tt: TokenTypes = {
     Decrement: new TokenType('--'),
 
     // keywords
-    Async: new TokenType('async'),
-    Await: new TokenType('await'),
-    Break: new TokenType('break'),
-    Case: new TokenType('case'),
-    Catch: new TokenType('catch'),
-    Const: new TokenType('const'),
-    Continue: new TokenType('continue'),
-    Debugger: new TokenType('debugger'),
-    Default: new TokenType('default'),
-    Delete: new TokenType('delete'),
-    Do: new TokenType('do'),
-    Else: new TokenType('else'),
-    False: new TokenType('false'),
-    Finally: new TokenType('finally'),
-    For: new TokenType('for'),
-    Function: new TokenType('function'),
-    If: new TokenType('if'),
-    Let: new TokenType('let'),
-    Return: new TokenType('return'),
-    Switch: new TokenType('switch'),
-    This: new TokenType('this'),
-    Throw: new TokenType('throw'),
-    True: new TokenType('true'),
-    Try: new TokenType('try'),
-    Typeof: new TokenType('typeof'),
-    Var: new TokenType('var'),
-    Void: new TokenType('void'),
-    While: new TokenType('while'),
-    With: new TokenType('with'),
-    Yield: new TokenType('yield'),
+    Async: new TokenType('async', { isKeyword: true }),
+    Await: new TokenType('await', { isKeyword: true }),
+    Break: new TokenType('break', { isKeyword: true }),
+    Case: new TokenType('case', { isKeyword: true }),
+    Catch: new TokenType('catch', { isKeyword: true }),
+    Const: new TokenType('const', { isKeyword: true }),
+    Continue: new TokenType('continue', { isKeyword: true }),
+    Debugger: new TokenType('debugger', { isKeyword: true }),
+    Default: new TokenType('default', { isKeyword: true }),
+    Delete: new TokenType('delete', { isKeyword: true }),
+    Do: new TokenType('do', { isKeyword: true }),
+    Else: new TokenType('else', { isKeyword: true }),
+    False: new TokenType('false', { isKeyword: true }),
+    Finally: new TokenType('finally', { isKeyword: true }),
+    For: new TokenType('for', { isKeyword: true }),
+    Function: new TokenType('function', { isKeyword: true }),
+    If: new TokenType('if', { isKeyword: true }),
+    Let: new TokenType('let', { isKeyword: true }),
+    Return: new TokenType('return', { isKeyword: true }),
+    Switch: new TokenType('switch', { isKeyword: true }),
+    This: new TokenType('this', { isKeyword: true }),
+    Throw: new TokenType('throw', { isKeyword: true }),
+    True: new TokenType('true', { isKeyword: true }),
+    Try: new TokenType('try', { isKeyword: true }),
+    Typeof: new TokenType('typeof', { isKeyword: true }),
+    Var: new TokenType('var', { isKeyword: true }),
+    Void: new TokenType('void', { isKeyword: true }),
+    While: new TokenType('while', { isKeyword: true }),
+    With: new TokenType('with', { isKeyword: true }),
+    Yield: new TokenType('yield', { isKeyword: true }),
 
     // operator tokens
     Comma: new TokenType(',', { precedence: 1 }),
@@ -95,7 +98,7 @@ export const tt: TokenTypes = {
     StrictEquality: new TokenType('===', { precedence: 9 }),
     StrictInequality: new TokenType('!==', { precedence: 9 }),
     In: new TokenType('in', { precedence: 10 }),
-    InstanceOf: new TokenType('instanceof', { precedence: 10 }),
+    InstanceOf: new TokenType('instanceof', { isKeyword: true, precedence: 10 }),
     LessThan: new TokenType('<', { precedence: 10 }),
     LessThanEqual: new TokenType('<=', { precedence: 10 }),
     GreaterThan: new TokenType('>', { precedence: 10 }),
