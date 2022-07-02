@@ -7,7 +7,7 @@ const input = fs.readFileSync('input/source.js').toString();
 const tokeniser = new Tokeniser(input);
 const tokens = tokeniser.tokenise();
 
-const parser = new Parser(tokens);
+const parser = new Parser(tokens, { omitLocations: true });
 const ast = parser.parse();
 
 console.log(JSON.stringify(ast, null, 4));

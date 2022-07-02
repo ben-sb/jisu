@@ -5,16 +5,19 @@ import { addExtra, assignmentExpressionToPattern, expressionToPattern } from './
 import { SourceLocation, SourcePosition } from '../tokeniser/tokens/location';
 
 export class Parser {
+    private readonly options: ParserOptions;
     private readonly tokens: Token[];
     private position: number;
-    private nodeStartPositions: SourcePosition[];
+    private readonly nodeStartPositions: SourcePosition[];
 
     /**
      * Creates a new parser.
      * @param tokens The list of tokens.
+     * @param options The parser options.
      */
-    constructor(tokens: Token[]) {
+    constructor(tokens: Token[], options: ParserOptions = {}) {
         this.tokens = tokens;
+        this.options = options;
         this.position = 0;
         this.nodeStartPositions = [];
     }
@@ -52,6 +55,10 @@ export class Parser {
      * Records the next token as the start of the current node being parsed.
      */
     private startNode(existingNode?: t.Node): void {
+        if (this.options.omitLocations) {
+            return;
+        }
+
         if (existingNode) {
             if (existingNode.extra && existingNode.extra.location) {
                 this.nodeStartPositions.push(existingNode.extra.location.start);
@@ -74,6 +81,11 @@ export class Parser {
      * @returns The node.
      */
     private finishNode<T extends t.Node>(node: T): T {
+        // TODO: emit debug logs here
+        if (this.options.omitLocations) {
+            return node;
+        }
+
         const lastToken = this.peekToken(-1);
         if (this.nodeStartPositions.length > 0 && lastToken.location) {
             const start = this.nodeStartPositions.pop() as SourcePosition;
@@ -651,14 +663,17 @@ export class Parser {
         canBeGrouped: boolean,
         canBeAssignment: boolean
     ): t.Expression {
-        const expression = this.parseExpressionInner();
-        const nextToken = this.peekToken();
+        let expression = this.parseExpressionInner();
+        let nextToken = this.peekToken();
 
         if (canBeAssignment && assignmentOperatorTokens.has(nextToken.type)) {
             return this.parseAssignmentExpression(expression);
         } else if (updateOperatorTokens.has(nextToken.type)) {
-            return this.parsePostfixUpdateExpression(expression);
-        } else if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
+            expression = this.parsePostfixUpdateExpression(expression);
+            nextToken = this.peekToken(); // could also be grouped
+        } 
+        
+        if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
             return this.parseGroupedExpression(expression);
         } else {
             return expression;
@@ -801,7 +816,7 @@ export class Parser {
     private parseUnaryExpression(): t.UnaryExpression {
         this.startNode();
         const operator = this.getNextToken(unaryOperatorTokens);
-        const expression = this.parseExpression();
+        const expression = this.parseExpression({ canBeGrouped: false, canBeSequence: false, canBeAssignment: false });
         return this.finishNode(t.unaryExpression(operator.value, expression));
     }
 
@@ -812,7 +827,7 @@ export class Parser {
     private parsePrefixUpdateExpression(): t.UpdateExpression {
         this.startNode();
         const operator = this.getNextToken(updateOperatorTokens);
-        const argument = this.parseExpression();
+        const argument = this.parseExpression({ canBeGrouped: false, canBeSequence: false, canBeAssignment: false });
         return this.finishNode(t.updateExpression(operator.value, argument, true));
     }
 
@@ -1085,6 +1100,10 @@ export class Parser {
 
         return this.finishNode(t.doExpression(body, async));
     }
+}
+
+export interface ParserOptions {
+    omitLocations?: boolean;
 }
 
 interface ParseExpressionParams {
