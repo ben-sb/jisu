@@ -83,24 +83,6 @@ export class Parser {
     }
 
     /**
-     * Returns an error message indicating an encountered token was not of the
-     * expected type.
-     * @param token The unexpected token.
-     * @param expectedType The expected token type (or set of types).
-     */
-    private unexpectedTokenErrorMessage(token: Token, expectedType?: TokenType | Set<TokenType>): string {
-        if (expectedType) {
-            if (expectedType instanceof Set) {
-                return `Unexpected token ${token.value}, expected ${Array.from(expectedType).map(t => t.name).join(', ')}`;
-            } else {
-                return `Unexpected token ${token.value}, expected ${expectedType.name}`;
-            }
-        } else {
-            return  `Unexpected token ${token.value}`;
-        }
-    }
-
-    /**
      * Returns the next token from the token list and increments the
      * current position.
      * @param requiredType The type the token is required to be (optional).
@@ -134,6 +116,24 @@ export class Parser {
         return this.position < this.tokens.length
             ? this.tokens[this.position + offset]
             : this.tokens[this.tokens.length - 1]; // EOF token
+    }
+
+    /**
+     * Returns an error message indicating an encountered token was not of the
+     * expected type.
+     * @param token The unexpected token.
+     * @param expectedType The expected token type (or set of types).
+     */
+    private unexpectedTokenErrorMessage(token: Token, expectedType?: TokenType | Set<TokenType>): string {
+        if (expectedType) {
+            if (expectedType instanceof Set) {
+                return `Unexpected token ${token.value}, expected ${Array.from(expectedType).map(t => t.name).join(', ')}`;
+            } else {
+                return `Unexpected token ${token.value}, expected ${expectedType.name}`;
+            }
+        } else {
+            return  `Unexpected token ${token.value}`;
+        }
     }
 
     /**
