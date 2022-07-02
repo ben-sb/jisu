@@ -1,7 +1,7 @@
+import * as t from './ast/types';
 import { Token } from '../tokeniser/tokens/token';
 import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
-import * as t from './ast/types';
-import { addExtra, arrayExpressionToPattern, assignmentExpressionToPattern, expressionToPattern, objectExpressionToPattern, spreadElementToPattern } from './utils';
+import { addExtra, assignmentExpressionToPattern, expressionToPattern } from './utils';
 
 export class Parser {
     private readonly tokens: Token[];
@@ -844,7 +844,7 @@ export class Parser {
                     ? this.parseSpreadElement()
                     : this.parseExpression({ canBeSequence: false });
                 elements.push(element);
-                
+
                 if (this.peekToken().type == tt.Comma) {
                     this.advance();
                     if (this.peekToken().type == tt.RightBracket) {
