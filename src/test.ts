@@ -6,7 +6,6 @@ const input = fs.readFileSync('input/source.js').toString();
 
 const tokeniser = new Tokeniser(input);
 const tokens = tokeniser.tokenise();
-console.log(tokens);
 
 const parser = new Parser(tokens);
 const ast = parser.parse();

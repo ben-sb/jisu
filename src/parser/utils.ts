@@ -3,12 +3,11 @@ import * as t from './ast/types';
 type ArbitraryNode = {[key: string]: any};
 
 /**
- * Attempts to convert an expression to a pattern. Returns the expression
- * if it is not possible.
+ * Converts an expression to a pattern.
  * @param expression The expression.
- * @returns The pattern or original expression.
+ * @returns The pattern.
  */
-export function expressionToPattern(expression: t.Expression): t.Pattern | t.Expression {
+export function expressionToPattern(expression: t.Expression): t.Pattern {
     switch (expression.type) {
         case 'Identifier':
             return expression;
@@ -19,9 +18,10 @@ export function expressionToPattern(expression: t.Expression): t.Pattern | t.Exp
         case 'ObjectExpression':
             return objectExpressionToPattern(expression);
         default:
-            return expression;
+            throw new Error(`Cannot convert ${expression.type} to pattern`);
     }
 }
+
 /**
  * Converts an assignment expression to an assignment pattern.
  * @param expression The assignment expression.
@@ -47,11 +47,25 @@ export function assignmentExpressionToPattern(
 export function arrayExpressionToPattern(
     expression: t.ArrayExpression
 ): t.ArrayPattern {
-    const pattern = expression as ArbitraryNode;
-    // TODO: check elements are valid for an array pattern
-    // also convert spread to rest elements
-    pattern.type = 'ArrayPattern';
-    return pattern as t.ArrayPattern;
+    const elements = expression.elements.map(e => arrayElementToPattern(e));
+    return t.arrayPattern(elements);
+}
+
+/**
+ * Attempts to convert an array element to a pattern.
+ * @param element The array element.
+ * @returns The pattern.
+ */
+function arrayElementToPattern(
+    element: t.Expression | t.SpreadElement | null
+): t.Pattern | null {
+    if (!element) {
+        return element;
+    } else if (element.type == 'SpreadElement') {
+        return spreadElementToPattern(element);
+    } else {
+        return expressionToPattern(element);
+    }
 }
 
 /**

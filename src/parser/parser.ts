@@ -179,7 +179,7 @@ export class Parser {
      * @returns The variable declarator node.
      */
     private parseVariableDeclarator(): t.VariableDeclarator {
-        const pattern = this.parsePattern();
+        const pattern = this.parsePattern(false);
 
         this.getNextToken(tt.Assignment);
         
@@ -547,13 +547,16 @@ export class Parser {
      * binary or logical expression (defaults to true).
      * @param canBeSequence Whether it can be a sequence expression (defaults 
      * to true).
+     * @param canBeAssignment Whether it can be an assignment expression
+     * (defaults to true).
      * @returns The expression node.
      */
     private parseExpression({ 
         canBeGrouped = true, 
-        canBeSequence = true
+        canBeSequence = true,
+        canBeAssignment = true
     }: ParseExpressionParams = {}): t.Expression {
-        const expression = this.parseExpression2(canBeGrouped);
+        const expression = this.parseExpression2(canBeGrouped, canBeAssignment);
         const nextToken = this.peekToken();
 
         if (canBeSequence && nextToken.type == tt.Comma) {
@@ -568,13 +571,18 @@ export class Parser {
      * Second level of parsing an expression.
      * @param canBeGrouped Whether it can be a grouped expression, i.e.
      * a binary or logical expression (defaults to true).
+     * @param canBeAssignment Whether it can be an assignment expression
+     * (defaults to true).
      * @returns 
      */
-    private parseExpression2(canBeGrouped: boolean = true): t.Expression {
+    private parseExpression2(
+        canBeGrouped: boolean,
+        canBeAssignment: boolean
+    ): t.Expression {
         const expression = this.parseExpressionInner();
         const nextToken = this.peekToken();
 
-        if (assignmentOperatorTokens.has(nextToken.type)) {
+        if (canBeAssignment && assignmentOperatorTokens.has(nextToken.type)) {
             return this.parseAssignmentExpression(expression);
         } else if (updateOperatorTokens.has(nextToken.type)) {
             return this.parsePostfixUpdateExpression(expression);
@@ -658,14 +666,16 @@ export class Parser {
 
     /**
      * Parses a pattern.
+     * @param canBeAssignment Whether it can be an assignment pattern
+     * (defaults to true).
      * @returns The pattern node.
      */
-    private parsePattern(): t.Pattern {
+    private parsePattern(canBeAssignment: boolean = true): t.Pattern {
         const nextToken = this.peekToken();
 
         switch (nextToken.type) {
             case tt.Identifier: {
-                const expression = this.parseExpression({ canBeSequence: false });
+                const expression = this.parseExpression({ canBeSequence: false, canBeAssignment });
                 if (expression.type == 'Identifier') {
                     return expression;
                 } else if (expression.type == 'AssignmentExpression') {
@@ -988,4 +998,5 @@ export class Parser {
 interface ParseExpressionParams {
     canBeGrouped?: boolean;
     canBeSequence?: boolean;
+    canBeAssignment?: boolean
 }
