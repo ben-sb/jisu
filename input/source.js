@@ -1,1 +1,3 @@
-var [...a] = 5
+function test([...a,] = { a: 10 }) {
+
+}

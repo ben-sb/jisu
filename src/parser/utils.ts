@@ -6,9 +6,11 @@ import * as t from './ast/types';
  * @returns The pattern.
  */
 export function expressionToPattern(expression: t.Expression): t.Pattern {
+    if (t.isPattern(expression)) {
+        return expression;
+    }
+
     switch (expression.type) {
-        case 'Identifier':
-            return expression;
         case 'AssignmentExpression':
             return assignmentExpressionToPattern(expression);
         case 'ArrayExpression':
@@ -46,7 +48,14 @@ export function assignmentExpressionToPattern(
 export function arrayExpressionToPattern(
     expression: t.ArrayExpression
 ): t.ArrayPattern {
-    const elements = expression.elements.map(e => arrayElementToPattern(e));
+    const elements = [];
+    for (let i=0; i<expression.elements.length; i++) {
+        const pattern = arrayElementToPattern(expression.elements[i]);
+        if (pattern && pattern.type == 'RestElement' && i < expression.elements.length - 1) {
+            throw new Error('A rest element must be last in a destructuring pattern');
+        }
+        elements.push(pattern);
+    }
     return t.arrayPattern(elements);
 }
 
@@ -75,7 +84,14 @@ function arrayElementToPattern(
 export function objectExpressionToPattern(
     expression: t.ObjectExpression
 ): t.ObjectPattern {
-    const properties = expression.properties.map(p => objectMemberToPattern(p));
+    const properties = [];
+    for (let i=0; i<expression.properties.length; i++) {
+        const pattern = objectMemberToPattern(expression.properties[i]);
+        if (pattern.type == 'RestElement' && i < expression.properties.length - 1) {
+            throw new Error('A rest element must be last in a destructuring pattern');
+        }
+        properties.push(pattern);
+    }
     return t.objectPattern(properties);
 }
 

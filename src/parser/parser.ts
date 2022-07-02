@@ -671,28 +671,8 @@ export class Parser {
      * @returns The pattern node.
      */
     private parsePattern(canBeAssignment: boolean = true): t.Pattern {
-        const nextToken = this.peekToken();
-
-        switch (nextToken.type) {
-            case tt.Identifier: {
-                const expression = this.parseExpression({ canBeSequence: false, canBeAssignment });
-                if (expression.type == 'Identifier') {
-                    return expression;
-                } else if (expression.type == 'AssignmentExpression') {
-                    return assignmentExpressionToPattern(expression);
-                } else {
-                    throw new Error(`Unexpected expression type ${expression.type}, expected Identifier or AssignmentPattern`);
-                }
-            }
-            case tt.LeftBracket:
-                return arrayExpressionToPattern(this.parseArrayExpression());
-            case tt.LeftBrace:
-                return objectExpressionToPattern(this.parseObjectExpression());
-            case tt.Ellipsis:
-                return spreadElementToPattern(this.parseSpreadElement());
-            default:
-                throw new Error(this.unexpectedTokenErrorMessage(nextToken));
-        }
+        const expression = this.parseExpression({ canBeSequence: false, canBeAssignment });
+        return expressionToPattern(expression);
     }
 
     /**
@@ -936,6 +916,10 @@ export class Parser {
             this.getNextToken();
             const value = this.parseExpression({ canBeSequence: false });
             return t.objectProperty(key, value, computed);
+        } else if (nextToken.type == tt.Assignment) { // assignment property (only for object)
+            const expression = this.parseAssignmentExpression(key);
+            const assignmentPattern = assignmentExpressionToPattern(expression);
+            return t.objectProperty(key, assignmentPattern as any) as t.AssignmentProperty;
         } else if (nextToken.type == tt.LeftParenthesis) {
             const params = this.parseFunctionParams();
             const body = this.parseBlockStatement();
