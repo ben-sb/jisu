@@ -1,6 +1,19 @@
 import * as t from './ast/types';
 
 /**
+ * Adds extra data to a node.
+ * @param node The node.
+ * @param key The key within the extra data.
+ * @param value The value.
+ */
+export function addExtra(node: t.Node, key: t.NodeExtraKey, value: any): void {
+    if (!node.extra) {
+        node.extra = {};
+    }
+    node.extra[key] = value;
+}
+
+/**
  * Converts an expression to a pattern.
  * @param expression The expression.
  * @returns The pattern.
@@ -34,10 +47,12 @@ export function assignmentExpressionToPattern(
         throw new Error(`Unexpected assignment pattern operator ${expression.operator}, expected =`);
     }
     
-    const pattern = t.isPattern(expression.left)
+    const left = t.isPattern(expression.left)
         ? expression.left
         : expressionToPattern(expression.left);
-    return t.assignmentPattern(pattern, expression.right);
+    const pattern = t.assignmentPattern(left, expression.right);
+    pattern.extra = expression.extra;
+    return pattern;
 }
 
 /**
@@ -51,12 +66,19 @@ export function arrayExpressionToPattern(
     const elements = [];
     for (let i=0; i<expression.elements.length; i++) {
         const pattern = arrayElementToPattern(expression.elements[i]);
-        if (pattern && pattern.type == 'RestElement' && i < expression.elements.length - 1) {
-            throw new Error('A rest element must be last in a destructuring pattern');
+        if (pattern && pattern.type == 'RestElement') {
+            if (i < expression.elements.length - 1) {
+                throw new Error('A rest element must be last in a destructuring pattern');
+            } else if (pattern.extra && pattern.extra.trailingComma) {
+                throw new Error('A rest element in a destructuring pattern cannot have a trailing comma');
+            }
         }
         elements.push(pattern);
     }
-    return t.arrayPattern(elements);
+    
+    const pattern = t.arrayPattern(elements);
+    pattern.extra = expression.extra;
+    return pattern;
 }
 
 /**
@@ -87,12 +109,19 @@ export function objectExpressionToPattern(
     const properties = [];
     for (let i=0; i<expression.properties.length; i++) {
         const pattern = objectMemberToPattern(expression.properties[i]);
-        if (pattern.type == 'RestElement' && i < expression.properties.length - 1) {
-            throw new Error('A rest element must be last in a destructuring pattern');
+        if (pattern.type == 'RestElement') {
+            if (i < expression.properties.length - 1) {
+                throw new Error('A rest element must be last in a destructuring pattern');
+            } else if (pattern.extra && pattern.extra.trailingComma) {
+                throw new Error('A rest element in a destructuring pattern cannot have a trailing comma');
+            }
         }
         properties.push(pattern);
     }
-    return t.objectPattern(properties);
+    
+    const pattern = t.objectPattern(properties);
+    pattern.extra = expression.extra;
+    return pattern;
 }
 
 /**
@@ -123,6 +152,7 @@ function objectPropertyToPattern(property: t.ObjectProperty): t.AssignmentProper
     } else {
         const pattern = property as {[key: string]: any};
         pattern.value = expressionToPattern(property.value);
+        pattern.extra = property.extra;
         return pattern as t.AssignmentProperty;
     }
 }
@@ -136,5 +166,7 @@ export function spreadElementToPattern(
     element: t.SpreadElement
 ): t.RestElement {
     const pattern = expressionToPattern(element.argument);
-    return t.restElement(pattern);
+    const restElement = t.restElement(pattern);
+    restElement.extra = element.extra;
+    return restElement;
 }

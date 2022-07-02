@@ -1,5 +1,11 @@
 export interface Node {
     type: string;
+    extra?: NodeExtra;
+}
+
+export type NodeExtraKey = 'trailingComma';
+export interface NodeExtra {
+    trailingComma?: boolean;
 }
 
 export type Program = Node & {
@@ -309,7 +315,7 @@ export function doExpression(body: BlockStatement, async: boolean): DoExpression
 // patterns
 export type Pattern = Identifier | ObjectPattern | ArrayPattern
     | RestElement | AssignmentPattern;
-    
+
 const PATTERN_TYPES = new Set([
     'Identifier', 'ObjectPattern', 'ArrayPattern', 'RestElement',
     'AssignmentPattern'

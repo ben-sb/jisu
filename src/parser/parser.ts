@@ -1,7 +1,7 @@
 import { Token } from '../tokeniser/tokens/token';
 import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
 import * as t from './ast/types';
-import { arrayExpressionToPattern, assignmentExpressionToPattern, expressionToPattern, objectExpressionToPattern, spreadElementToPattern } from './utils';
+import { addExtra, arrayExpressionToPattern, assignmentExpressionToPattern, expressionToPattern, objectExpressionToPattern, spreadElementToPattern } from './utils';
 
 export class Parser {
     private readonly tokens: Token[];
@@ -232,9 +232,14 @@ export class Parser {
 
         const params = [];
         while (this.peekToken().type != tt.RightParenthesis) {
-            params.push(this.parsePattern());
+            const pattern = this.parsePattern();
+            params.push(pattern);
+
             if (this.peekToken().type == tt.Comma) {
                 this.advance();
+                if (this.peekToken().type == tt.RightParenthesis) {
+                    addExtra(pattern, 'trailingComma', true);
+                }
             } else {
                 break;
             }
@@ -839,8 +844,12 @@ export class Parser {
                     ? this.parseSpreadElement()
                     : this.parseExpression({ canBeSequence: false });
                 elements.push(element);
+                
                 if (this.peekToken().type == tt.Comma) {
                     this.advance();
+                    if (this.peekToken().type == tt.RightBracket) {
+                        addExtra(element, 'trailingComma', true);
+                    }
                 } else {
                     break;
                 }
@@ -860,10 +869,14 @@ export class Parser {
 
         const properties = [];
         while (this.peekToken().type != tt.RightBrace) {
-            properties.push(this.parseObjectMember());
+            const member = this.parseObjectMember();
+            properties.push(member);
 
             if (this.peekToken().type == tt.Comma) {
                 this.advance();
+                if (this.peekToken().type == tt.RightBrace) {
+                    addExtra(member, 'trailingComma', true);
+                }
             } else {
                 break;
             }
