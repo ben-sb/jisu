@@ -1,3 +1,6 @@
-var a = {
-    key: 30
+var a = 100;
+while (a == 0) {
+    var c = --a + 10;
+    c, d, e, f;
 }
+return 10;

@@ -2,10 +2,12 @@ import * as t from './ast/types';
 import { Token } from '../tokeniser/tokens/token';
 import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
 import { addExtra, assignmentExpressionToPattern, expressionToPattern } from './utils';
+import { SourceLocation, SourcePosition } from '../tokeniser/tokens/location';
 
 export class Parser {
     private readonly tokens: Token[];
     private position: number;
+    private nodeStartPositions: SourcePosition[];
 
     /**
      * Creates a new parser.
@@ -14,6 +16,7 @@ export class Parser {
     constructor(tokens: Token[]) {
         this.tokens = tokens;
         this.position = 0;
+        this.nodeStartPositions = [];
     }
 
     /**
@@ -21,12 +24,20 @@ export class Parser {
      * @returns The program node.
      */
     parse(): t.Program {
+        this.startNode();
+    
         const statements = [];
         while (this.position < this.tokens.length && this.peekToken().type != tt.EOF) {
             statements.push(this.parseStatement());
         }
 
-        return t.program(statements);
+        const program = this.finishNode(t.program(statements));
+
+        if (this.nodeStartPositions.length > 0) {
+            // TODO: maybe throw error if parsing in a strict manner ?
+        }
+
+        return program;
     }
 
     /**
@@ -35,6 +46,40 @@ export class Parser {
      */
     private advance(): number {
         return this.position++;
+    }
+
+    /**
+     * Records the next token as the start of the current node being parsed.
+     */
+    private startNode(existingNode?: t.Node): void {
+        if (existingNode) {
+            if (existingNode.extra && existingNode.extra.location) {
+                this.nodeStartPositions.push(existingNode.extra.location.start);
+            } else {
+                // TODO: maybe throw error ?
+            }
+        } else {
+            const token = this.peekToken();
+            if (token.location) {
+                this.nodeStartPositions.push(token.location.start);
+            } else {
+                // TODO: maybe throw error ?
+            }
+        }
+    }
+
+    /**
+     * Adds the source location to a node if possible.
+     * @param node The node.
+     * @returns The node.
+     */
+    private finishNode<T extends t.Node>(node: T): T {
+        const lastToken = this.peekToken(-1);
+        if (this.nodeStartPositions.length > 0 && lastToken.location) {
+            const start = this.nodeStartPositions.pop() as SourcePosition;
+            addExtra(node, 'location', new SourceLocation(start, lastToken.location.end));
+        }
+        return node;
     }
 
     /**
@@ -71,6 +116,7 @@ export class Parser {
                 throw new Error(this.unexpectedTokenErrorMessage(token, requiredType));
             }
         }
+
         return token;
     }
 
@@ -157,6 +203,7 @@ export class Parser {
      * @returns The variable declaration node.
      */
     private parseVariableDeclaration(): t.VariableDeclaration {
+        this.startNode();
         const kindToken = this.getNextToken(variableDeclarationKindTokens);
 
         const declarators = [];
@@ -171,7 +218,7 @@ export class Parser {
         }
 
         this.parseSemiColon();
-        return t.variableDeclaration(kindToken.value, declarators);
+        return this.finishNode(t.variableDeclaration(kindToken.value, declarators));
     }
 
     /**
@@ -179,13 +226,14 @@ export class Parser {
      * @returns The variable declarator node.
      */
     private parseVariableDeclarator(): t.VariableDeclarator {
+        this.startNode();
         const pattern = this.parsePattern(false);
 
         this.getNextToken(tt.Assignment);
         
         const expression = this.parseExpression({ canBeSequence: false });
 
-        return t.variableDeclarator(pattern, expression);
+        return this.finishNode(t.variableDeclarator(pattern, expression));
     }
 
     /**
@@ -194,6 +242,7 @@ export class Parser {
      * @returns The function declaration or expression node.
      */
     private parseFunction(isDeclaration: boolean): t.FunctionDeclaration | t.FunctionExpression {
+        this.startNode();
         let async = false;
         if (this.peekToken().type == tt.Async) {
             async = true;
@@ -218,9 +267,10 @@ export class Parser {
         const params = this.parseFunctionParams();
         const body = this.parseBlockStatement();
 
-        return isDeclaration
+        const func = isDeclaration
             ? t.functionDeclaration(identifier as t.Identifier, params, body, generator, async)
             : t.functionExpression(identifier, params, body, generator, async);
+        return this.finishNode(func);
     }
 
     /**
@@ -255,6 +305,7 @@ export class Parser {
      * @returns The block statement node.
      */
     private parseBlockStatement(): t.BlockStatement {
+        this.startNode();
         this.getNextToken(tt.LeftBrace);
 
         const statements = [];
@@ -264,7 +315,7 @@ export class Parser {
 
         this.getNextToken(tt.RightBrace);
 
-        return t.blockStatement(statements);
+        return this.finishNode(t.blockStatement(statements));
     }
 
     /**
@@ -272,6 +323,7 @@ export class Parser {
      * @returns The if statement node.
      */
     private parseIfStatement(): t.IfStatement {
+        this.startNode();
         this.getNextToken(tt.If);
         this.getNextToken(tt.LeftParenthesis);
         
@@ -287,7 +339,7 @@ export class Parser {
             alternate = this.parseStatement();
         }
 
-        return t.ifStatement(test, consequent, alternate);
+        return this.finishNode(t.ifStatement(test, consequent, alternate));
     }
 
     /**
@@ -295,6 +347,7 @@ export class Parser {
      * @returns The switch statement node.
      */
     private parseSwitchStatement(): t.SwitchStatement {
+        this.startNode();
         this.getNextToken(tt.Switch);
         this.getNextToken(tt.LeftParenthesis);
 
@@ -310,7 +363,7 @@ export class Parser {
 
         this.getNextToken(tt.RightBrace);
 
-        return t.switchStatement(discriminant, cases);
+        return this.finishNode(t.switchStatement(discriminant, cases));
     }
 
     /**
@@ -318,6 +371,7 @@ export class Parser {
      * @returns The switch case node.
      */
     private parseSwitchCase(): t.SwitchCase {
+        this.startNode();
         let test: t.Expression | null;
         if (this.peekToken().type == tt.Default) {
             test = null;
@@ -333,7 +387,7 @@ export class Parser {
             consequent.push(this.parseStatement());
         }
 
-        return t.switchCase(test, consequent);
+        return this.finishNode(t.switchCase(test, consequent));
     }
 
     /**
@@ -341,6 +395,7 @@ export class Parser {
      * @returns The for statement node.
      */
     private parseForStatement(): t.ForStatement {
+        this.startNode();
         this.getNextToken(tt.For);
         this.getNextToken(tt.LeftParenthesis);
 
@@ -373,7 +428,7 @@ export class Parser {
         
         const body = this.parseStatement();
 
-        return t.forStatement(init, test, update, body);
+        return this.finishNode(t.forStatement(init, test, update, body));
     }
 
     /**
@@ -381,6 +436,7 @@ export class Parser {
      * @returns The while statement node.
      */
     private parseWhileStatement(): t.WhileStatement {
+        this.startNode();
         this.getNextToken(tt.While);
         this.getNextToken(tt.LeftParenthesis);
 
@@ -389,7 +445,7 @@ export class Parser {
 
         const body = this.parseStatement();
 
-        return t.whileStatement(test, body);
+        return this.finishNode(t.whileStatement(test, body));
     }
 
     /**
@@ -397,6 +453,7 @@ export class Parser {
      * @returns The do while statement node.
      */
     private parseDoWhileStatement(): t.DoWhileStatement {
+        this.startNode();
         this.getNextToken(tt.Do);
 
         const body = this.parseStatement();
@@ -408,7 +465,7 @@ export class Parser {
         
         this.getNextToken(tt.RightParenthesis);
 
-        return t.doWhileStatement(body, test);
+        return this.finishNode(t.doWhileStatement(body, test));
     }
 
     /**
@@ -416,6 +473,7 @@ export class Parser {
      * @returns The try statement node.
      */
     private parseTryStatement(): t.TryStatement {
+        this.startNode();
         this.getNextToken(tt.Try);
         const block = this.parseBlockStatement();
 
@@ -434,7 +492,7 @@ export class Parser {
             throw new Error('Missing catch or finally after try');
         }
 
-        return t.tryStatement(block, handler, finalizer);
+        return this.finishNode(t.tryStatement(block, handler, finalizer));
     }
 
     /**
@@ -442,6 +500,7 @@ export class Parser {
      * @returns The catch clause node.
      */
     private parseCatchClause(): t.CatchClause {
+        this.startNode();
         this.getNextToken(tt.Catch);
 
         let param: t.Identifier | null = null;
@@ -453,7 +512,7 @@ export class Parser {
 
         const body = this.parseBlockStatement();
 
-        return t.catchClause(param, body);
+        return this.finishNode(t.catchClause(param, body));
     }
 
     /**
@@ -461,6 +520,7 @@ export class Parser {
      * @returns The with statement node.
      */
     private parseWithStatement(): t.WithStatement {
+        this.startNode();
         this.getNextToken(tt.With);
         
         this.getNextToken(tt.LeftParenthesis);
@@ -469,7 +529,7 @@ export class Parser {
 
         const body = this.parseStatement();
 
-        return t.withStatement(expression, body);
+        return this.finishNode(t.withStatement(expression, body));
     }
 
     /**
@@ -477,9 +537,10 @@ export class Parser {
      * @returns The debugger statement node.
      */
     private parseDebuggerStatement(): t.DebuggerStatement {
+        this.startNode();
         this.getNextToken(tt.Debugger);
         this.parseSemiColon();
-        return t.debuggerStatement();
+        return this.finishNode(t.debuggerStatement());
     }
     
     /**
@@ -487,9 +548,10 @@ export class Parser {
      * @returns The break statement node.
      */
     private parseBreakStatement(): t.BreakStatement {
+        this.startNode();
         this.getNextToken(tt.Break);
         this.parseSemiColon();
-        return t.breakStatement();
+        return this.finishNode(t.breakStatement());
     }
 
     /**
@@ -497,9 +559,10 @@ export class Parser {
      * @returns The continue statement node.
      */
     private parseContinueStatement(): t.ContinueStatement {
+        this.startNode();
         this.getNextToken(tt.Continue);
         this.parseSemiColon();
-        return t.continueStatement();
+        return this.finishNode(t.continueStatement());
     }
 
     /**
@@ -507,12 +570,13 @@ export class Parser {
      * @returns The return statement node.
      */
     private parseReturnStatement(): t.ReturnStatement {
+        this.startNode();
         this.getNextToken(tt.Return);
 
         const expression = this.parseExpression();
 
         this.parseSemiColon();
-        return t.returnStatement(expression);
+        return this.finishNode(t.returnStatement(expression));
     }
 
     /**
@@ -520,8 +584,9 @@ export class Parser {
      * @returns The empty statement node.
      */
     private parseEmptyStatement(): t.EmptyStatement {
+        this.startNode();
         this.parseSemiColon();
-        return t.emptyStatement();
+        return this.finishNode(t.emptyStatement());
     }
 
     /**
@@ -529,11 +594,12 @@ export class Parser {
      * @returns The labeled statement node.
      */
     private parseLabeledStatement(): t.LabeledStatement {
+        this.startNode();
         const label = this.parseIdentifier();
         this.getNextToken(tt.Colon);
         const statement = this.parseStatement();
 
-        return t.labeledStatement(label, statement);
+        return this.finishNode(t.labeledStatement(label, statement));
     }
 
     /**
@@ -541,9 +607,10 @@ export class Parser {
      * @returns The expression statement node.
      */
     private parseExpressionStatement(): t.ExpressionStatement {
+        this.startNode();
         const expression = this.parseExpression();
         this.parseSemiColon();
-        return t.expressionStatement(expression);
+        return this.finishNode(t.expressionStatement(expression));
     }
 
     /**
@@ -653,8 +720,9 @@ export class Parser {
      * @returns The identifier node.
      */
     private parseIdentifier(): t.Identifier {
+        this.startNode();
         const token = this.getNextToken(tt.Identifier);
-        return t.identifier(token.value);
+        return this.finishNode(t.identifier(token.value));
     }
 
     /**
@@ -662,11 +730,12 @@ export class Parser {
      * @returns The identifier node.
      */
     private parseKeywordAsIdentifier(): t.Identifier {
+        this.startNode();
         const token = this.getNextToken();
         if (!token.type.isKeyword) {
             throw new Error(`Token ${token.type.name} is not a keyword`);
         }
-        return t.identifier(token.type.name);
+        return this.finishNode(t.identifier(token.type.name));
     }
 
     /**
@@ -685,9 +754,10 @@ export class Parser {
      * @returns The numeric literal node.
      */
     private parseNumericLiteral(): t.NumericLiteral {
+        this.startNode();
         const token = this.getNextToken(tt.Number);
         const value = parseInt(token.value);
-        return t.numericLiteral(value);
+        return this.finishNode(t.numericLiteral(value));
     }
 
     /**
@@ -695,9 +765,10 @@ export class Parser {
      * @returns The boolean literal node.
      */
     private parseBooleanLiteral(): t.BooleanLiteral {
+        this.startNode();
         const token = this.getNextToken(booleanValueTokens);
         const value = token.type == tt.True;
-        return t.booleanLiteral(value);
+        return this.finishNode(t.booleanLiteral(value));
     }
 
     /**
@@ -705,8 +776,9 @@ export class Parser {
      * @returns The this expression node.
      */
     private parseThisExpression(): t.ThisExpression {
+        this.startNode();
         this.getNextToken(tt.This);
-        return t.thisExpression();
+        return this.finishNode(t.thisExpression());
     }
 
     /**
@@ -715,10 +787,11 @@ export class Parser {
      * @returns The assignment expression node.
      */
     private parseAssignmentExpression(left: t.Expression): t.AssignmentExpression {
+        this.startNode(left);
         const leftPattern = expressionToPattern(left);
         const operator = this.getNextToken(assignmentOperatorTokens);
         const right = this.parseExpression({ canBeSequence: false });
-        return t.assignmentExpression(operator.value, leftPattern, right);
+        return this.finishNode(t.assignmentExpression(operator.value, leftPattern, right));
     }
 
     /**
@@ -726,9 +799,10 @@ export class Parser {
      * @returns The unary expression node.
      */
     private parseUnaryExpression(): t.UnaryExpression {
+        this.startNode();
         const operator = this.getNextToken(unaryOperatorTokens);
         const expression = this.parseExpression();
-        return t.unaryExpression(operator.value, expression);
+        return this.finishNode(t.unaryExpression(operator.value, expression));
     }
 
     /**
@@ -736,9 +810,10 @@ export class Parser {
      * @returns The update expression node.
      */
     private parsePrefixUpdateExpression(): t.UpdateExpression {
+        this.startNode();
         const operator = this.getNextToken(updateOperatorTokens);
         const argument = this.parseExpression();
-        return t.updateExpression(operator.value, argument, true);
+        return this.finishNode(t.updateExpression(operator.value, argument, true));
     }
 
     /**
@@ -747,8 +822,9 @@ export class Parser {
      * @returns The update expression node.
      */
     private parsePostfixUpdateExpression(argument: t.Expression): t.UpdateExpression {
+        this.startNode(argument);
         const operator = this.getNextToken(updateOperatorTokens);
-        return t.updateExpression(operator.value, argument, false);
+        return this.finishNode(t.updateExpression(operator.value, argument, false));
     }
 
     /**
@@ -759,10 +835,18 @@ export class Parser {
      * @returns The binary or logical expression node.
      */
     private parseGroupedExpression(firstExpression: t.Expression, minPrecedence: number = 0): t.BinaryExpression | t.LogicalExpression {
+        this.startNode(firstExpression);
+        let isFirst = true;
         let expression = firstExpression;
         let lookahead = this.peekToken();
 
         while (groupedOperatorTokens.has(lookahead.type) && lookahead.type.precedence! >= minPrecedence) {
+            if (!isFirst) {
+                this.startNode(expression);
+            } else {
+                isFirst = false;
+            }
+            
             const operator = lookahead.type;
             const operatorPrecedence = operator.precedence as number;
             this.advance();
@@ -776,9 +860,10 @@ export class Parser {
                 lookahead = this.peekToken();
             }
 
-            expression = logicalOperatorTokens.has(operator)
+            const expr = logicalOperatorTokens.has(operator)
                 ? t.logicalExpression(operator.name as any, expression, right)
                 : t.binaryExpression(operator.name as any, expression, right);
+            expression = this.finishNode(expr);
         }
 
         return expression as t.BinaryExpression | t.LogicalExpression;
@@ -790,7 +875,9 @@ export class Parser {
      * @returns The sequence expression node.
      */
     private parseSequenceExpression(firstExpression: t.Expression): t.SequenceExpression {
+        this.startNode(firstExpression);
         const expressions = [firstExpression];
+
         while (true) {
             const nextExpression = this.parseExpression({ canBeSequence: false });
             expressions.push(nextExpression);
@@ -802,7 +889,7 @@ export class Parser {
             }
         }
 
-        return t.sequenceExpression(expressions);
+        return this.finishNode(t.sequenceExpression(expressions));
     }
 
     /**
@@ -810,9 +897,10 @@ export class Parser {
      * @returns The spread element node.
      */
     private parseSpreadElement(): t.SpreadElement {
+        this.startNode();
         this.getNextToken(tt.Ellipsis);
         const expression = this.parseExpression({ canBeSequence: false });
-        return t.spreadElement(expression);
+        return this.finishNode(t.spreadElement(expression));
     }
 
     /**
@@ -820,11 +908,11 @@ export class Parser {
      * @returns The expression node.
      */
     private parseParenthesisedExpression(): t.Expression {
+        this.startNode();
         this.getNextToken(tt.LeftParenthesis);
         const expression = this.parseExpression();
         this.getNextToken(tt.RightParenthesis);
-
-        return expression;
+        return this.finishNode(expression);
     }
 
     /**
@@ -832,6 +920,7 @@ export class Parser {
      * @returns The array expression node.
      */
     private parseArrayExpression(): t.ArrayExpression {
+        this.startNode();
         this.getNextToken(tt.LeftBracket);
 
         const elements = [];
@@ -857,7 +946,7 @@ export class Parser {
         }
         this.getNextToken(tt.RightBracket);
 
-        return t.arrayExpression(elements);
+        return this.finishNode(t.arrayExpression(elements));
     }
 
     /**
@@ -865,6 +954,7 @@ export class Parser {
      * @returns The object expression node.
      */
     private parseObjectExpression(): t.ObjectExpression {
+        this.startNode();
         this.getNextToken(tt.LeftBrace);
 
         const properties = [];
@@ -883,7 +973,7 @@ export class Parser {
         }
         this.getNextToken(tt.RightBrace);
 
-        return t.objectExpression(properties);
+        return this.finishNode(t.objectExpression(properties));
     }
 
     /**
@@ -897,11 +987,13 @@ export class Parser {
 
         let nextToken = this.peekToken();
         if (nextToken.type == tt.LeftBracket) {
+            this.startNode();
             this.getNextToken(tt.LeftBracket);
             key = this.parseExpression();
             this.getNextToken(tt.RightBracket);
             computed = true;
         } else if (nextToken.type == tt.Identifier || nextToken.type.isKeyword) {
+            this.startNode();
             key = nextToken.type == tt.Identifier
                 ? this.parseIdentifier()
                 : this.parseKeywordAsIdentifier();
@@ -916,7 +1008,7 @@ export class Parser {
                     throw new Error(this.unexpectedTokenErrorMessage(this.peekToken(), tt.LeftParenthesis));
                 }
             } else if (nextToken.type == tt.Comma || nextToken.type == tt.RightBrace) { // shorthand property
-                return t.objectProperty(key, key, false, true);
+                return this.finishNode(t.objectProperty(key, key, false, true));
             }
         } else if (nextToken.type == tt.Ellipsis) {
             return this.parseSpreadElement();
@@ -928,15 +1020,15 @@ export class Parser {
         if (nextToken.type == tt.Colon) {
             this.getNextToken();
             const value = this.parseExpression({ canBeSequence: false });
-            return t.objectProperty(key, value, computed);
+            return this.finishNode(t.objectProperty(key, value, computed));
         } else if (nextToken.type == tt.Assignment) { // assignment property (only for object)
             const expression = this.parseAssignmentExpression(key);
             const assignmentPattern = assignmentExpressionToPattern(expression);
-            return t.objectProperty(key, assignmentPattern as any) as t.AssignmentProperty;
+            return this.finishNode(t.objectProperty(key, assignmentPattern as any)) as t.AssignmentProperty;
         } else if (nextToken.type == tt.LeftParenthesis) {
             const params = this.parseFunctionParams();
             const body = this.parseBlockStatement();
-            return t.objectMethod(method || 'method', key, params, body, computed);
+            return this.finishNode(t.objectMethod(method || 'method', key, params, body, computed));
         } else {
             throw new Error(this.unexpectedTokenErrorMessage(nextToken));
         }
@@ -947,6 +1039,7 @@ export class Parser {
      * @returns The yield expression node.
      */
     private parseYieldExpression(): t.YieldExpression {
+        this.startNode();
         this.getNextToken(tt.Yield);
 
         let delegate = false;
@@ -959,7 +1052,7 @@ export class Parser {
 
         const argument = this.parseExpression();
         
-        return t.yieldExpression(argument, delegate);
+        return this.finishNode(t.yieldExpression(argument, delegate));
     }
     
     /**
@@ -967,10 +1060,11 @@ export class Parser {
      * @returns The await expression.
      */
     private parseAwaitExpression(): t.AwaitExpression {
+        this.startNode();
         this.getNextToken(tt.Await);
         const argument = this.parseExpression();
 
-        return t.awaitExpression(argument);
+        return this.finishNode(t.awaitExpression(argument));
     }
 
     /**
@@ -979,6 +1073,7 @@ export class Parser {
      * @returns The do expression node.
      */
     private parseDoExpression(isAsync: boolean = false): t.DoExpression {
+        this.startNode();
         let async = false;
         if (isAsync) {
             this.getNextToken(tt.Async);
@@ -988,7 +1083,7 @@ export class Parser {
         this.getNextToken(tt.Do);
         const body = this.parseBlockStatement();
 
-        return t.doExpression(body, async);
+        return this.finishNode(t.doExpression(body, async));
     }
 }
 

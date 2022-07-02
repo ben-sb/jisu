@@ -1,10 +1,13 @@
+import { SourceLocation } from '../../tokeniser/tokens/location';
+
 export interface Node {
     type: string;
     extra?: NodeExtra;
 }
 
-export type NodeExtraKey = 'trailingComma';
+export type NodeExtraKey = 'location' | 'trailingComma';
 export interface NodeExtra {
+    location?: SourceLocation;
     trailingComma?: boolean;
 }
 
