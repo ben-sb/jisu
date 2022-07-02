@@ -1,7 +1,5 @@
 import * as t from './ast/types';
 
-type ArbitraryNode = {[key: string]: any};
-
 /**
  * Converts an expression to a pattern.
  * @param expression The expression.
@@ -34,9 +32,10 @@ export function assignmentExpressionToPattern(
         throw new Error(`Unexpected assignment pattern operator ${expression.operator}, expected =`);
     }
     
-    const pattern = expression as ArbitraryNode;
-    pattern.type = 'AssignmentPattern';
-    return pattern as t.AssignmentPattern;
+    const pattern = t.isPattern(expression.left)
+        ? expression.left
+        : expressionToPattern(expression.left);
+    return t.assignmentPattern(pattern, expression.right);
 }
 
 /**
@@ -52,7 +51,7 @@ export function arrayExpressionToPattern(
 }
 
 /**
- * Attempts to convert an array element to a pattern.
+ * Converst an array element to a pattern.
  * @param element The array element.
  * @returns The pattern.
  */
@@ -76,11 +75,40 @@ function arrayElementToPattern(
 export function objectExpressionToPattern(
     expression: t.ObjectExpression
 ): t.ObjectPattern {
-    const pattern = expression as ArbitraryNode;
-    // TODO: check elements are valid for an object pattern
-    // also convert spread to rest elements
-    pattern.type = 'ObjectPattern';
-    return pattern as t.ObjectPattern;
+    const properties = expression.properties.map(p => objectMemberToPattern(p));
+    return t.objectPattern(properties);
+}
+
+/**
+ * Converts an object member to a pattern.
+ * @param member The object member.
+ * @returns The pattern.
+ */
+function objectMemberToPattern(
+    member: t.ObjectProperty | t.ObjectMethod | t.SpreadElement
+): t.AssignmentProperty | t.RestElement {
+    if (member.type == 'SpreadElement') {
+        return spreadElementToPattern(member);
+    } else if (member.type == 'ObjectProperty') {
+        return objectPropertyToPattern(member);
+    } else {
+        throw new Error(`Cannot convert ${member.type} to pattern`);
+    }
+}
+
+/**
+ * Converts an object property to an assignment property.
+ * @param property The object property.
+ * @returns The assignment property.
+ */
+function objectPropertyToPattern(property: t.ObjectProperty): t.AssignmentProperty {
+    if (property.computed) {
+        throw new Error(`Cannot convert computed object property to pattern`);
+    } else {
+        const pattern = property as {[key: string]: any};
+        pattern.value = expressionToPattern(property.value);
+        return pattern as t.AssignmentProperty;
+    }
 }
 
 /**
@@ -91,7 +119,6 @@ export function objectExpressionToPattern(
 export function spreadElementToPattern(
     element: t.SpreadElement
 ): t.RestElement {
-    const pattern = element as ArbitraryNode;
-    pattern.type = 'RestElement';
-    return pattern as t.RestElement;
+    const pattern = expressionToPattern(element.argument);
+    return t.restElement(pattern);
 }

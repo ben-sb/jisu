@@ -309,6 +309,14 @@ export function doExpression(body: BlockStatement, async: boolean): DoExpression
 // patterns
 export type Pattern = Identifier | ObjectPattern | ArrayPattern
     | RestElement | AssignmentPattern;
+    
+const PATTERN_TYPES = new Set([
+    'Identifier', 'ObjectPattern', 'ArrayPattern', 'RestElement',
+    'AssignmentPattern'
+]);
+export function isPattern(node: Node): node is Pattern {
+    return PATTERN_TYPES.has(node.type);
+}
 
 export type AssignmentProperty = ObjectProperty & {
     value: Pattern;
