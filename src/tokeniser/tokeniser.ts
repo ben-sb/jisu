@@ -2,11 +2,15 @@ import * as CharCodes from 'charcodes';
 import { Token } from './tokens/token';
 import { matcherMap, MatchSuccess, OTHER_CHARS_KEY, TokenMatcher } from './matchers/tokenMatcher';
 import { tt } from './tokens/tokenTypes';
+import { SourcePosition } from './tokens/location';
 
 export class Tokeniser {
     private readonly tokens: Token[];
     private readonly input: string;
     private position: number;
+    private lineNumber: number;
+    private columnNumber: number;
+    private tokenStart: SourcePosition;
 
     /**
      * Creates a new tokeniser.
@@ -16,6 +20,9 @@ export class Tokeniser {
         this.tokens = [];
         this.input = input;
         this.position = 0;
+        this.lineNumber = 0;
+        this.columnNumber = 0;
+        this.tokenStart = new SourcePosition(this.lineNumber, this.columnNumber, this.position);
     }
 
     /**
@@ -53,8 +60,8 @@ export class Tokeniser {
             }
             
             if (matchResult) {
-                this.tokens.push(matchResult.token);
-                this.position += matchResult.length;
+                this.advance(matchResult.length);
+                this.addToken(matchResult.token);
             } else {
                 throw new Error(`Unable to match input ${inputStr}`);
             }
@@ -62,8 +69,32 @@ export class Tokeniser {
             this.readWhitespace();
         }
 
-        this.tokens.push(new Token(tt.EOF, 'EOF'));
+        this.addToken(new Token(tt.EOF, 'EOF'));
         return this.tokens;
+    }
+
+    /**
+     * Advances the input position by a given amount.
+     * @param amount The amount.
+     */
+    private advance(amount: number = 1): void {
+        this.position += amount;
+        this.columnNumber += amount;
+    }
+
+    /**
+     * Adds a token to the list of tokens. Also sets the source location of
+     * the token.
+     * @param token The token.
+     */
+    private addToken(token: Token): void {
+        token.location = {
+            start: this.tokenStart,
+            end: new SourcePosition(this.lineNumber, this.columnNumber, this.position - 1)
+        };
+        this.tokens.push(token);
+
+        this.tokenStart = new SourcePosition(this.lineNumber, this.columnNumber, this.position);
     }
 
     /**
@@ -84,9 +115,20 @@ export class Tokeniser {
             switch (charCode) {
                 case CharCodes.space:
                 case CharCodes.carriageReturn:
-                case CharCodes.tab:
+                case CharCodes.tab: {
+                    this.advance();
+                    this.tokenStart.position++;
+                    this.tokenStart.column++;
+                    break;
+                }
+
                 case CharCodes.lineFeed: {
                     this.position++;
+                    this.lineNumber++;
+                    this.columnNumber = 0;
+                    this.tokenStart.position++;
+                    this.tokenStart.line++;
+                    this.tokenStart.column = 0;
                     break;
                 }
 
