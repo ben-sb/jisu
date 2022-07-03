@@ -6,16 +6,19 @@ import { SourceLocation, SourcePosition } from '../tokeniser/tokens/location';
 
 export class Parser {
     private readonly options: ParserOptions;
+    private readonly input: string;
     private readonly tokens: Token[];
     private position: number;
     private readonly nodeStartPositions: SourcePosition[];
 
     /**
      * Creates a new parser.
+     * @param input The input string.
      * @param tokens The list of tokens.
      * @param options The parser options.
      */
-    constructor(tokens: Token[], options: ParserOptions = {}) {
+    constructor(input: string, tokens: Token[], options: ParserOptions = {}) {
+        this.input = input;
         this.tokens = tokens;
         this.options = options;
         this.position = 0;
@@ -107,7 +110,7 @@ export class Parser {
 
         if (requiredType) {
             if ((requiredType instanceof Set && !requiredType.has(token.type)) || (!(requiredType instanceof Set) && token.type != requiredType)) {
-                throw new Error(this.unexpectedTokenErrorMessage(token, requiredType));
+                throw new SyntaxError(this.unexpectedTokenErrorMessage(token, requiredType));
             }
         }
 
@@ -122,7 +125,7 @@ export class Parser {
      */
     private peekToken(offset: number = 0): Token {
         if (this.position + offset >= this.tokens.length) {
-            throw new Error('Unexpected EOF');
+            throw new SyntaxError('Unexpected EOF');
         }
 
         return this.position < this.tokens.length
@@ -137,6 +140,15 @@ export class Parser {
      * @param expectedType The expected token type (or set of types).
      */
     private unexpectedTokenErrorMessage(token: Token, expectedType?: TokenType | Set<TokenType>): string {
+        if (token.location) {
+            const line = this.input.split('\n')[token.location.start.line];
+            const tokenLength = token.value.toString
+                ? token.value.toString().length
+                : 1;
+            const indicatorLine = ' '.repeat(token.location.start.column) + '^'.repeat(tokenLength);
+            console.error(`${line}\n${indicatorLine}\n`);
+        }
+
         if (expectedType) {
             if (expectedType instanceof Set) {
                 return `Unexpected token ${token.value}, expected ${Array.from(expectedType).map(t => t.name).join(', ')}`;
@@ -273,7 +285,7 @@ export class Parser {
             ? null
             : this.parseIdentifier();
         if (isDeclaration && !identifier) {
-            throw new Error('Function statements require a function name');
+            throw new SyntaxError('Function statements require a function name');
         }
 
         const params = this.parseFunctionParams();
@@ -501,7 +513,7 @@ export class Parser {
         }
 
         if (!handler && !finalizer) {
-            throw new Error('Missing catch or finally after try');
+            throw new SyntaxError('Missing catch or finally after try');
         }
 
         return this.finishNode(t.tryStatement(block, handler, finalizer));
@@ -726,7 +738,7 @@ export class Parser {
             case tt.Do:
                 return this.parseDoExpression();
             default:
-                throw new Error(this.unexpectedTokenErrorMessage(token));
+                throw new SyntaxError(this.unexpectedTokenErrorMessage(token));
         }
     }
 
@@ -748,7 +760,7 @@ export class Parser {
         this.startNode();
         const token = this.getNextToken();
         if (!token.type.isKeyword) {
-            throw new Error(`Token ${token.type.name} is not a keyword`);
+            throw new SyntaxError(`Token ${token.type.name} is not a keyword`);
         }
         return this.finishNode(t.identifier(token.type.name));
     }
@@ -1019,8 +1031,9 @@ export class Parser {
                 key = nextToken.type == tt.Identifier
                     ? this.parseIdentifier()
                     : this.parseKeywordAsIdentifier();
-                if (this.peekToken().type != tt.LeftParenthesis) {
-                    throw new Error(this.unexpectedTokenErrorMessage(this.peekToken(), tt.LeftParenthesis));
+                nextToken = this.peekToken();
+                if (nextToken.type != tt.LeftParenthesis) {
+                    throw new SyntaxError(this.unexpectedTokenErrorMessage(nextToken, tt.LeftParenthesis));
                 }
             } else if (nextToken.type == tt.Comma || nextToken.type == tt.RightBrace) { // shorthand property
                 return this.finishNode(t.objectProperty(key, key, false, true));
@@ -1028,7 +1041,7 @@ export class Parser {
         } else if (nextToken.type == tt.Ellipsis) {
             return this.parseSpreadElement();
         } else {
-            throw new Error(this.unexpectedTokenErrorMessage(nextToken));
+            throw new SyntaxError(this.unexpectedTokenErrorMessage(nextToken));
         }
 
         nextToken = this.peekToken();
@@ -1045,7 +1058,7 @@ export class Parser {
             const body = this.parseBlockStatement();
             return this.finishNode(t.objectMethod(method || 'method', key, params, body, computed));
         } else {
-            throw new Error(this.unexpectedTokenErrorMessage(nextToken));
+            throw new SyntaxError(this.unexpectedTokenErrorMessage(nextToken));
         }
     }
 
