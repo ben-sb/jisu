@@ -751,6 +751,8 @@ export class Parser {
                 return this.parseBooleanLiteral();
             case tt.This:
                 return this.parseThisExpression();
+            case tt.Super:
+                return this.parseSuperExpression();
             case tt.LeftParenthesis:
                 return this.parseParenthesisedExpression();
             case tt.Function:
@@ -841,6 +843,16 @@ export class Parser {
         this.startNode();
         this.getNextToken(tt.This);
         return this.finishNode(t.thisExpression());
+    }
+
+    /**
+     * Parses a super expression.
+     * @returns The super expression node.
+     */
+    private parseSuperExpression(): t.SuperExpression {
+        this.startNode();
+        this.getNextToken(tt.Super);
+        return this.finishNode(t.superExpression());
     }
 
     /**
