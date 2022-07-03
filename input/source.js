@@ -1,1 +1,1 @@
-var { [a]: b } = 10;
+var a = super;

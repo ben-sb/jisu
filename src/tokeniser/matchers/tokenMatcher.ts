@@ -603,7 +603,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['i', [stringMatcher(tt.If, 'if'), stringMatcher(tt.InstanceOf, 'instanceof'), stringMatcher(tt.In, 'in')]],
     ['l', [stringMatcher(tt.Let, 'let')]],
     ['r', [stringMatcher(tt.Return, 'return')]],
-    ['s', [stringMatcher(tt.Switch, 'switch')]],
+    ['s', [stringMatcher(tt.Super, 'super'), stringMatcher(tt.Switch, 'switch')]],
     ['t', [stringMatcher(tt.This, 'this'), stringMatcher(tt.Throw, 'throw'), stringMatcher(tt.True, 'true'), stringMatcher(tt.Try, 'try'), stringMatcher(tt.Typeof, 'typeof')]],
     ['v', [stringMatcher(tt.Var, 'var'), stringMatcher(tt.Void, 'void')]],
     ['w', [stringMatcher(tt.While, 'while'), stringMatcher(tt.With, 'with')]],

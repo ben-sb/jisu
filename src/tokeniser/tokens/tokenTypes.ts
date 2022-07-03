@@ -58,6 +58,7 @@ export const tt: TokenTypes = {
     If: new TokenType('if', { isKeyword: true }),
     Let: new TokenType('let', { isKeyword: true }),
     Return: new TokenType('return', { isKeyword: true }),
+    Super: new TokenType('super', { isKeyword: true }),
     Switch: new TokenType('switch', { isKeyword: true }),
     This: new TokenType('this', { isKeyword: true }),
     Throw: new TokenType('throw', { isKeyword: true }),
