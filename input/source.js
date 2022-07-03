@@ -1,1 +1,1 @@
-var a = super;
+var a = 5 + 10;
