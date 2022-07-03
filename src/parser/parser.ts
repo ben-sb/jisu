@@ -1,7 +1,6 @@
 import * as t from './ast/types';
 import { Token } from '../tokeniser/tokens/token';
 import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
-import { addExtra, assignmentExpressionToPattern, expressionToPattern } from './utils';
 import { SourceLocation, SourcePosition } from '../tokeniser/tokens/location';
 
 export class Parser {
@@ -92,9 +91,22 @@ export class Parser {
         const lastToken = this.peekToken(-1);
         if (this.nodeStartPositions.length > 0 && lastToken.location) {
             const start = this.nodeStartPositions.pop() as SourcePosition;
-            addExtra(node, 'location', new SourceLocation(start, lastToken.location.end));
+            this.addExtra(node, 'location', new SourceLocation(start, lastToken.location.end));
         }
         return node;
+    }
+
+    /**
+     * Adds extra data to a node.
+     * @param node The node.
+     * @param key The key within the extra data.
+     * @param value The value.
+     */
+    private addExtra(node: t.Node, key: t.NodeExtraKey, value: any): void {
+        if (!node.extra) {
+            node.extra = {};
+        }
+        node.extra[key] = value;
     }
 
     /**
@@ -135,17 +147,19 @@ export class Parser {
 
     /**
      * Returns an error message indicating an encountered token was not of the
-     * expected type.
+     * expected type. Also logs the actual location of the error if possible.
      * @param token The unexpected token.
      * @param expectedType The expected token type (or set of types).
+     * @returns The error message.
      */
     private unexpectedTokenErrorMessage(token: Token, expectedType?: TokenType | Set<TokenType>): string {
         if (token.location) {
-            const line = this.input.split('\n')[token.location.start.line];
-            const tokenLength = token.value.toString
-                ? token.value.toString().length
+            const location = token.location;
+            const line = this.input.split('\n')[location.start.line];
+            const tokenLength = location.start.line == location.end.line
+                ? location.end.column - location.start.column
                 : 1;
-            const indicatorLine = ' '.repeat(token.location.start.column) + '^'.repeat(tokenLength);
+            const indicatorLine = ' '.repeat(location.start.column) + '^'.repeat(tokenLength);
             console.error(`${line}\n${indicatorLine}\n`);
         }
 
@@ -158,6 +172,27 @@ export class Parser {
         } else {
             return  `Unexpected token ${token.value}`;
         }
+    }
+
+    /**
+     * Returns an error message indicating an encountered node was not valid.
+     * Also logs the actual location of the error if possible.
+     * @param node The unexpected node.
+     * @param message The error message.
+     * @returns The error message.
+     */
+    private unexpectedNodeErrorMessage(node: t.Node, message: string): string {
+        if (node.extra && node.extra.location) {
+            const location = node.extra.location;
+            const line = this.input.split('\n')[location.start.line];
+            const nodeLength = location.start.line == location.end.line
+                ? location.end.column - location.start.column
+                : 1;
+            const indicatorLine = ' '.repeat(location.start.column) + '^'.repeat(nodeLength);
+            console.error(`${line}\n${indicatorLine}\n`);
+        }
+
+        return message;
     }
 
     /**
@@ -312,7 +347,7 @@ export class Parser {
             if (this.peekToken().type == tt.Comma) {
                 this.advance();
                 if (this.peekToken().type == tt.RightParenthesis) {
-                    addExtra(pattern, 'trailingComma', true);
+                    this.addExtra(pattern, 'trailingComma', true);
                 }
             } else {
                 break;
@@ -773,7 +808,7 @@ export class Parser {
      */
     private parsePattern(canBeAssignment: boolean = true): t.Pattern {
         const expression = this.parseExpression({ canBeSequence: false, canBeAssignment });
-        return expressionToPattern(expression);
+        return this.expressionToPattern(expression);
     }
 
     /**
@@ -815,7 +850,7 @@ export class Parser {
      */
     private parseAssignmentExpression(left: t.Expression): t.AssignmentExpression {
         this.startNode(left);
-        const leftPattern = expressionToPattern(left);
+        const leftPattern = this.expressionToPattern(left);
         const operator = this.getNextToken(assignmentOperatorTokens);
         const right = this.parseExpression({ canBeSequence: false });
         return this.finishNode(t.assignmentExpression(operator.value, leftPattern, right));
@@ -964,7 +999,7 @@ export class Parser {
                 if (this.peekToken().type == tt.Comma) {
                     this.advance();
                     if (this.peekToken().type == tt.RightBracket) {
-                        addExtra(element, 'trailingComma', true);
+                        this.addExtra(element, 'trailingComma', true);
                     }
                 } else {
                     break;
@@ -992,7 +1027,7 @@ export class Parser {
             if (this.peekToken().type == tt.Comma) {
                 this.advance();
                 if (this.peekToken().type == tt.RightBrace) {
-                    addExtra(member, 'trailingComma', true);
+                    this.addExtra(member, 'trailingComma', true);
                 }
             } else {
                 break;
@@ -1051,7 +1086,7 @@ export class Parser {
             return this.finishNode(t.objectProperty(key, value, computed));
         } else if (nextToken.type == tt.Assignment) { // assignment property (only for object)
             const expression = this.parseAssignmentExpression(key);
-            const assignmentPattern = assignmentExpressionToPattern(expression);
+            const assignmentPattern = this.assignmentExpressionToPattern(expression);
             return this.finishNode(t.objectProperty(key, assignmentPattern as any)) as t.AssignmentProperty;
         } else if (nextToken.type == tt.LeftParenthesis) {
             const params = this.parseFunctionParams();
@@ -1112,6 +1147,160 @@ export class Parser {
         const body = this.parseBlockStatement();
 
         return this.finishNode(t.doExpression(body, async));
+    }
+
+    /**
+     * Converts an expression to a pattern.
+     * @param expression The expression.
+     * @returns The pattern.
+     */
+    private expressionToPattern(expression: t.Expression): t.Pattern {
+        if (t.isPattern(expression)) {
+            return expression;
+        }
+
+        switch (expression.type) {
+            case 'AssignmentExpression':
+                return this.assignmentExpressionToPattern(expression);
+            case 'ArrayExpression':
+                return this.arrayExpressionToPattern(expression);
+            case 'ObjectExpression':
+                return this.objectExpressionToPattern(expression);
+            default:
+                throw new SyntaxError(this.unexpectedNodeErrorMessage(expression, `Invalid pattern ${expression.type}`));
+        }
+    }
+
+    /**
+     * Converts an assignment expression to an assignment pattern.
+     * @param expression The assignment expression.
+     * @returns The assignment pattern node.
+     */
+    private assignmentExpressionToPattern(
+        expression: t.AssignmentExpression
+    ): t.AssignmentPattern {
+        if (expression.operator != '=') {
+            throw new SyntaxError(this.unexpectedNodeErrorMessage(expression, `Invalid assignment pattern operator ${expression.operator}, expected =`));
+        }
+        
+        const left = t.isPattern(expression.left)
+            ? expression.left
+            : this.expressionToPattern(expression.left);
+        const pattern = t.assignmentPattern(left, expression.right);
+        pattern.extra = expression.extra;
+        return pattern;
+    }
+
+    /**
+     * Converts an array exression to an array pattern.
+     * @param expression The array expression.
+     * @returns The array pattern node.
+     */
+    private arrayExpressionToPattern(
+        expression: t.ArrayExpression
+    ): t.ArrayPattern {
+        const elements = [];
+        for (let i=0; i<expression.elements.length; i++) {
+            const pattern = this.arrayElementToPattern(expression.elements[i]);
+            if (pattern && pattern.type == 'RestElement') {
+                if (i < expression.elements.length - 1) {
+                    throw new SyntaxError(this.unexpectedNodeErrorMessage(pattern, 'A rest element must be last in a destructuring pattern'));
+                } else if (pattern.extra && pattern.extra.trailingComma) {
+                    throw new SyntaxError(this.unexpectedNodeErrorMessage(pattern, 'A rest element in a destructuring pattern cannot have a trailing comma'));
+                }
+            }
+            elements.push(pattern);
+        }
+        
+        const pattern = t.arrayPattern(elements);
+        pattern.extra = expression.extra;
+        return pattern;
+    }
+
+    /**
+     * Converts an array element to a pattern.
+     * @param element The array element.
+     * @returns The pattern.
+     */
+    private arrayElementToPattern(
+        element: t.Expression | t.SpreadElement | null
+    ): t.Pattern | null {
+        if (!element) {
+            return element;
+        } else if (element.type == 'SpreadElement') {
+            return this.spreadElementToPattern(element);
+        } else {
+            return this.expressionToPattern(element);
+        }
+    }
+
+    /**
+     * Converts an object expression to an object pattern.
+     * @param expression The object expression.
+     * @returns The object pattern node.
+     */
+    private objectExpressionToPattern(
+        expression: t.ObjectExpression
+    ): t.ObjectPattern {
+        const properties = [];
+        for (let i=0; i<expression.properties.length; i++) {
+            const pattern = this.objectMemberToPattern(expression.properties[i]);
+            if (pattern.type == 'RestElement') {
+                if (i < expression.properties.length - 1) {
+                    throw new SyntaxError(this.unexpectedNodeErrorMessage(pattern, 'A rest element must be last in a destructuring pattern'));
+                } else if (pattern.extra && pattern.extra.trailingComma) {
+                    throw new SyntaxError(this.unexpectedNodeErrorMessage(pattern, 'A rest element in a destructuring pattern cannot have a trailing comma'));
+                }
+            }
+            properties.push(pattern);
+        }
+        
+        const pattern = t.objectPattern(properties);
+        pattern.extra = expression.extra;
+        return pattern;
+    }
+
+    /**
+     * Converts an object member to a pattern.
+     * @param member The object member.
+     * @returns The pattern.
+     */
+    private objectMemberToPattern(
+        member: t.ObjectProperty | t.ObjectMethod | t.SpreadElement
+    ): t.AssignmentProperty | t.RestElement {
+        if (member.type == 'SpreadElement') {
+            return this.spreadElementToPattern(member);
+        } else if (member.type == 'ObjectProperty') {
+            return this.objectPropertyToPattern(member);
+        } else {
+            throw new SyntaxError(this.unexpectedNodeErrorMessage(member, `Invalid object member pattern type ${member.type}`));
+        }
+    }
+
+    /**
+     * Converts an object property to an assignment property.
+     * @param property The object property.
+     * @returns The assignment property.
+     */
+    private objectPropertyToPattern(property: t.ObjectProperty): t.AssignmentProperty {
+        const pattern = property as {[key: string]: any};
+        pattern.value = this.expressionToPattern(property.value);
+        pattern.extra = property.extra;
+        return pattern as t.AssignmentProperty;
+    }
+
+    /**
+     * Converts a spread element to a rest element.
+     * @param element The spread element.
+     * @returns The rest element node.
+     */
+    private spreadElementToPattern(
+        element: t.SpreadElement
+    ): t.RestElement {
+        const pattern = this.expressionToPattern(element.argument);
+        const restElement = t.restElement(pattern);
+        restElement.extra = element.extra;
+        return restElement;
     }
 }
 
