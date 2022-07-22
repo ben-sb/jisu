@@ -170,7 +170,7 @@ export class Parser {
                 return `Unexpected token ${token.value}, expected ${expectedType.name}`;
             }
         } else {
-            return  `Unexpected token ${token.value}`;
+            return `Unexpected token ${token.value}`;
         }
     }
 
@@ -774,6 +774,8 @@ export class Parser {
             return this.parseMemberExpression(expression, false);
         } else if (nextToken.type == tt.LeftParenthesis) {
             return this.parseCallExpression(expression);
+        } else if (nextToken.type == tt.Question) {
+            return this.parseConditionalExpression(expression);
         }
         
         if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
@@ -1042,7 +1044,7 @@ export class Parser {
 
     /**
      * Parses a call expression.
-     * @param callee The callee expression.
+     * @param callee The callee expression of the call expression.
      * @returns The call expression node.
      */
     private parseCallExpression(callee: t.Expression): t.CallExpression {
@@ -1068,6 +1070,23 @@ export class Parser {
         this.getNextToken(tt.RightParenthesis);
 
         return this.finishNode(t.callExpression(callee, args));
+    }
+
+    /**
+     * Parses a conditional expression.
+     * @param test The test expression of the conditional expression.
+     * @returns The conditional expression node.
+     */
+    private parseConditionalExpression(test: t.Expression): t.ConditionalExpression {
+        this.getNextToken(tt.Question);
+
+        const consequent = this.parseExpression();
+
+        this.getNextToken(tt.Colon);
+        
+        const alternate = this.parseExpression();
+
+        return this.finishNode(t.conditionalExpression(test, consequent, alternate));
     }
 
     /**
