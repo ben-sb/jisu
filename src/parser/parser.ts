@@ -82,6 +82,7 @@ export class Parser {
      */
     private finishNode<T extends t.Node>(node: T): T {
         // TODO: emit debug logs here
+        console.log(`Parsed ${node.type}`);
         if (this.options.omitLocations) {
             return node;
         }
@@ -1046,7 +1047,7 @@ export class Parser {
         this.getNextToken(tt.LeftBracket);
 
         const elements = [];
-        while (!this.match(tt.RighBracket)) {
+        while (!this.match(tt.RightBracket)) {
             if (this.match(tt.Comma)) {
                 elements.push(null);
                 this.advance();

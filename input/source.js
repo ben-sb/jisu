@@ -1,4 +1,1 @@
-function* test() {
-    debugger
-    var a = 10;
-}
+var a = [];

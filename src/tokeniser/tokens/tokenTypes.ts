@@ -23,7 +23,28 @@ interface TokenOptions {
     rightAssociative?: boolean;
 }
 
-type TokenTypes = { [name: string]: TokenType };
+type TokenTypes = { [name in TokenTypeKey]: TokenType };
+
+type TokenTypeKey = 'EOF' | 'Identifier' | 'Number' | 'LeftBrace'
+    | 'RightBrace' | 'Question' | 'Colon' | 'SemiColon' | 'Increment'
+    | 'Decrement' | 'Ellipsis' | 'Async' | 'Await' | 'Break' | 'Case'
+    | 'Catch' | 'Const' | 'Continue' | 'Debugger' | 'Default' | 'Delete'
+    | 'Do' | 'Else' | 'False' | 'Finally' | 'For' | 'Function' | 'If'
+    | 'Let' | 'Return' | 'Super' | 'Switch' | 'This' | 'Throw' | 'True'
+    | 'Try' | 'Typeof' | 'Var' | 'Void' | 'While' | 'With' | 'Yield'
+    | 'Comma' | 'Assignment' | 'AddAssignment' | 'SubtractAssignment'
+    | 'MultiplyAssignment' | 'DivideAssignment' | 'ModulusAssignment' 
+    | 'ExponentialAssignment' | 'LeftShiftAssignment' | 'RightShiftAssignment'
+    | 'UnsignedRightShiftAssignment' | 'BitwiseOrAssignment'
+    | 'BitwiseXorAssignment' | 'BitwiseAndAssignment' | 'OrAssignment'
+    | 'AndAssignment' | 'NullCoalescingAssignment' | 'Or'
+    | 'NullCoalescing' | 'And' | 'BitwiseOr' | 'BitwiseXor'
+    | 'BitwiseAnd' | 'Equality' | 'Inequality' | 'StrictEquality'
+    | 'StrictInequality' | 'In' | 'InstanceOf' | 'LessThan' | 'LessThanEqual'
+    | 'GreaterThan' | 'GreaterThanEqual' | 'LeftShift' | 'RightShift'
+    | 'UnsignedRightShift' | 'Add' | 'Subtract' | 'Multiply' | 'Divide'
+    | 'Modulus' | 'Exponential' | 'Not' | 'BitwiseNot' | 'LeftBracket'
+    | 'RightBracket' | 'LeftParenthesis' | 'RightParenthesis';
 
 export const tt: TokenTypes = {
     EOF: new TokenType('eof'),
