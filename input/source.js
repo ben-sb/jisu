@@ -1,1 +1,2 @@
-var a = b ? c = 10 : d;
+var a = new RegExp(b, c)
+10

@@ -8,7 +8,7 @@ const tokeniser = new Tokeniser(input);
 const tokens = tokeniser.tokenise();
 
 const parser = new Parser(input, tokens, {
-    emitLogs: false,
+    emitLogs: true,
     omitLocations: false 
 });
 const ast = parser.parse();

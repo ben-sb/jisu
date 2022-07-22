@@ -730,14 +730,17 @@ export class Parser {
      * to true).
      * @param canBeAssignment Whether it can be an assignment expression
      * (defaults to true).
+     * @param canBeCall Whether it can be a call expression (defaults to
+     * true).
      * @returns The expression node.
      */
     private parseExpression({ 
         canBeGrouped = true, 
         canBeSequence = true,
-        canBeAssignment = true
+        canBeAssignment = true,
+        canBeCall = true
     }: ParseExpressionParams = {}): t.Expression {
-        const expression = this.parseExpression2(canBeGrouped, canBeAssignment);
+        const expression = this.parseExpression2({ canBeGrouped, canBeSequence, canBeAssignment, canBeCall });
         const nextToken = this.peekToken();
 
         if (canBeSequence && nextToken.type == tt.Comma) {
@@ -750,16 +753,22 @@ export class Parser {
 
     /**
      * Second level of parsing an expression.
-     * @param canBeGrouped Whether it can be a grouped expression, i.e.
-     * a binary or logical expression (defaults to true).
+     * @param canBeGrouped Whether it can be a grouped expression, i.e
+     * binary or logical expression (defaults to true).
+     * @param canBeSequence Whether it can be a sequence expression (defaults 
+     * to true).
      * @param canBeAssignment Whether it can be an assignment expression
      * (defaults to true).
-     * @returns 
+     * @param canBeCall Whether it can be a call expression (defaults to
+     * true).
+     * @returns The expression node.
      */
-    private parseExpression2(
-        canBeGrouped: boolean,
-        canBeAssignment: boolean
-    ): t.Expression {
+    private parseExpression2({ 
+        canBeGrouped = true, 
+        canBeSequence = true,
+        canBeAssignment = true,
+        canBeCall = true
+    }: ParseExpressionParams = {}): t.Expression {
         let expression = this.parseExpressionInner();
         let nextToken = this.peekToken();
 
@@ -772,7 +781,7 @@ export class Parser {
             return this.parseMemberExpression(expression, true);
         } else if (nextToken.type == tt.Dot) {
             return this.parseMemberExpression(expression, false);
-        } else if (nextToken.type == tt.LeftParenthesis) {
+        } else if (canBeCall && nextToken.type == tt.LeftParenthesis) {
             return this.parseCallExpression(expression);
         } else if (nextToken.type == tt.Question) {
             return this.parseConditionalExpression(expression);
@@ -811,6 +820,8 @@ export class Parser {
                 return this.parseThisExpression();
             case tt.Super:
                 return this.parseSuperExpression();
+            case tt.New:
+                return this.parseNewExpression();
             case tt.LeftParenthesis:
                 return this.parseParenthesisedExpression();
             case tt.Function:
@@ -1070,6 +1081,41 @@ export class Parser {
         this.getNextToken(tt.RightParenthesis);
 
         return this.finishNode(t.callExpression(callee, args));
+    }
+
+    /**
+     * Parses a new expression.
+     * @returns The new expression node.
+     */
+    private parseNewExpression(): t.NewExpression {
+        this.getNextToken(tt.New);
+
+        const callee = this.parseExpression({ canBeCall: false });
+
+        const args = [];
+        if (this.match(tt.LeftParenthesis)) {
+            this.getNextToken(tt.LeftParenthesis);
+
+            while (!this.match(tt.RightParenthesis)) {
+                const arg = this.match(tt.Ellipsis)
+                    ? this.parseSpreadElement()
+                    : this.parseExpression({ canBeSequence: false });
+                args.push(arg);
+    
+                if (this.match(tt.Comma)) {
+                    this.advance();
+                    if (this.match(tt.RightParenthesis)) {
+                        this.addExtra(arg, 'trailingComma', true);
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            this.getNextToken(tt.RightParenthesis);
+        }
+
+        return this.finishNode(t.newExpression(callee, args));
     }
 
     /**
@@ -1447,5 +1493,6 @@ export interface ParserOptions {
 interface ParseExpressionParams {
     canBeGrouped?: boolean;
     canBeSequence?: boolean;
-    canBeAssignment?: boolean
+    canBeAssignment?: boolean,
+    canBeCall?: boolean
 }
