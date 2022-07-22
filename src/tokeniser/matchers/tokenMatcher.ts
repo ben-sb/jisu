@@ -16,6 +16,19 @@ export type TokenMatchResult = MatchSuccess | MatchFailure;
 export type TokenMatcher = (input: string) => TokenMatchResult;
 
 /**
+ * Returns whether a char code corresponds to a valid identifier character.
+ * @param charCode The char code.
+ * @returns Whether.
+ */
+const isIdentifierCharCode = (charCode: number): boolean => {
+    return (charCode >= 48 && charCode <= 56) // 0-9
+        || (charCode >= 65 && charCode <= 90) // A-Z
+        || (charCode >= 97 && charCode <= 122) // a-z
+        || charCode == 36 // $
+        || charCode == 95; // _
+}
+
+/**
  * Returns a matcher for a single character in the input.
  * @param type The type of the token.
  * @param char The character to be matched.
@@ -33,17 +46,17 @@ const characterMatcher = (type: TokenType, char: string): TokenMatcher => {
                 matched: false
             };
     };
-}
+};
 
 /**
- * Returns a matcher for a string.
+ * Returns a matcher for a keyword string.
  * @param type The type of the token.
- * @param str The string to be matched.
+ * @param str The keyword string to be matched.
  * @returns The token matcher.
  */
-const stringMatcher = (type: TokenType, str: string): TokenMatcher => {
+const keywordMatcher = (type: TokenType, str: string): TokenMatcher => {
     return (input: string) => {
-        return input.startsWith(str)
+        return input.startsWith(str) && !isIdentifierCharCode(input.charCodeAt(str.length))
             ? {
                 matched: true,
                 length: str.length,
@@ -53,7 +66,7 @@ const stringMatcher = (type: TokenType, str: string): TokenMatcher => {
                 matched: false
             };
     };
-}
+};
 
 /**
  * Returns a matcher for a regular expression.
@@ -594,20 +607,20 @@ export const OTHER_CHARS_KEY = {};
  * Allows for more efficient token matching.
  */
 export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
-    ['a', [stringMatcher(tt.Async, 'async'), stringMatcher(tt.Await, 'await')]],
-    ['b', [stringMatcher(tt.Break, 'break')]],
-    ['c', [stringMatcher(tt.Case, 'case'), stringMatcher(tt.Catch, 'catch'), stringMatcher(tt.Const, 'const'), stringMatcher(tt.Continue, 'continue')]],
-    ['d', [stringMatcher(tt.Debugger, 'debugger'), stringMatcher(tt.Default, 'default'), stringMatcher(tt.Delete, 'delete'), stringMatcher(tt.Do, 'do')]],
-    ['e', [stringMatcher(tt.Else, 'else')]],
-    ['f', [stringMatcher(tt.False, 'false'), stringMatcher(tt.Finally, 'finally'), stringMatcher(tt.For, 'for'), stringMatcher(tt.Function, 'function')]],
-    ['i', [stringMatcher(tt.If, 'if'), stringMatcher(tt.InstanceOf, 'instanceof'), stringMatcher(tt.In, 'in')]],
-    ['l', [stringMatcher(tt.Let, 'let')]],
-    ['r', [stringMatcher(tt.Return, 'return')]],
-    ['s', [stringMatcher(tt.Super, 'super'), stringMatcher(tt.Switch, 'switch')]],
-    ['t', [stringMatcher(tt.This, 'this'), stringMatcher(tt.Throw, 'throw'), stringMatcher(tt.True, 'true'), stringMatcher(tt.Try, 'try'), stringMatcher(tt.Typeof, 'typeof')]],
-    ['v', [stringMatcher(tt.Var, 'var'), stringMatcher(tt.Void, 'void')]],
-    ['w', [stringMatcher(tt.While, 'while'), stringMatcher(tt.With, 'with')]],
-    ['y', [stringMatcher(tt.Yield, 'yield')]],
+    ['a', [keywordMatcher(tt.Async, 'async'), keywordMatcher(tt.Await, 'await')]],
+    ['b', [keywordMatcher(tt.Break, 'break')]],
+    ['c', [keywordMatcher(tt.Case, 'case'), keywordMatcher(tt.Catch, 'catch'), keywordMatcher(tt.Const, 'const'), keywordMatcher(tt.Continue, 'continue')]],
+    ['d', [keywordMatcher(tt.Debugger, 'debugger'), keywordMatcher(tt.Default, 'default'), keywordMatcher(tt.Delete, 'delete'), keywordMatcher(tt.Do, 'do')]],
+    ['e', [keywordMatcher(tt.Else, 'else')]],
+    ['f', [keywordMatcher(tt.False, 'false'), keywordMatcher(tt.Finally, 'finally'), keywordMatcher(tt.For, 'for'), keywordMatcher(tt.Function, 'function')]],
+    ['i', [keywordMatcher(tt.If, 'if'), keywordMatcher(tt.InstanceOf, 'instanceof'), keywordMatcher(tt.In, 'in')]],
+    ['l', [keywordMatcher(tt.Let, 'let')]],
+    ['r', [keywordMatcher(tt.Return, 'return')]],
+    ['s', [keywordMatcher(tt.Super, 'super'), keywordMatcher(tt.Switch, 'switch')]],
+    ['t', [keywordMatcher(tt.This, 'this'), keywordMatcher(tt.Throw, 'throw'), keywordMatcher(tt.True, 'true'), keywordMatcher(tt.Try, 'try'), keywordMatcher(tt.Typeof, 'typeof')]],
+    ['v', [keywordMatcher(tt.Var, 'var'), keywordMatcher(tt.Void, 'void')]],
+    ['w', [keywordMatcher(tt.While, 'while'), keywordMatcher(tt.With, 'with')]],
+    ['y', [keywordMatcher(tt.Yield, 'yield')]],
 
     [',', [characterMatcher(tt.Comma, ',')]],
     ['+', [matchPlusTokens]],
@@ -632,7 +645,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['}', [characterMatcher(tt.RightBrace, '}')]],
     [':', [characterMatcher(tt.Colon, ':')]],
     [';', [characterMatcher(tt.SemiColon, ';')]],
-    ['.', [stringMatcher(tt.Ellipsis, '...')]],
+    ['.', [keywordMatcher(tt.Ellipsis, '...')]],
 
     // matches all other characters
     [OTHER_CHARS_KEY, [
