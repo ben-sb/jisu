@@ -137,10 +137,10 @@ export const tt: TokenTypes = {
     Exponential: new TokenType('**', { precedence: 14, rightAssociative: true }),
     Not: new TokenType('!', { precedence: 15, rightAssociative: true }),
     BitwiseNot: new TokenType('~', { precedence: 15, rightAssociative: true }),
-    LeftBracket: new TokenType('[', { precedence: 18 }),
-    RightBracket: new TokenType(']', { precedence: 18 }),
-    LeftParenthesis: new TokenType('(', { precedence: 19 }),
-    RightParenthesis: new TokenType(')', { precedence: 19 })
+    LeftBracket: new TokenType('[', { precedence: 17 }),
+    RightBracket: new TokenType(']', { precedence: 17 }),
+    LeftParenthesis: new TokenType('(', { precedence: 18 }),
+    RightParenthesis: new TokenType(')', { precedence: 18 })
 };
 
 export const variableDeclarationKindTokens: Set<TokenType> = new Set([
