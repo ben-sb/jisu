@@ -4,11 +4,12 @@ import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, gro
 import { SourceLocation, SourcePosition } from '../tokeniser/tokens/location';
 
 export class Parser {
-    private readonly options: ParserOptions;
     private readonly input: string;
     private readonly tokens: Token[];
+    private readonly options: ParserOptions;
     private position: number;
     private readonly nodeStartPositions: SourcePosition[];
+    private readonly warnings: string[];
 
     /**
      * Creates a new parser.
@@ -22,6 +23,7 @@ export class Parser {
         this.options = options;
         this.position = 0;
         this.nodeStartPositions = [];
+        this.warnings = [];
     }
 
     /**
@@ -39,7 +41,7 @@ export class Parser {
         const program = this.finishNode(t.program(statements));
 
         if (this.nodeStartPositions.length > 0) {
-            // TODO: maybe throw error if parsing in a strict manner ?
+            this.warnings.push('Leftover start positions, node locations may be misaligned');
         }
 
         return program;
@@ -64,16 +66,12 @@ export class Parser {
         if (existingNode) {
             if (existingNode.extra && existingNode.extra.location) {
                 this.nodeStartPositions.push(existingNode.extra.location.start);
-            } else {
-                // TODO: maybe throw error ?
+            } else if (!this.options.omitLocations) {
+                throw new Error('Expected existing node to have location');
             }
         } else {
             const token = this.peekToken();
-            if (token.location) {
-                this.nodeStartPositions.push(token.location.start);
-            } else {
-                // TODO: maybe throw error ?
-            }
+            this.nodeStartPositions.push(token.location.start);
         }
     }
 
@@ -204,12 +202,52 @@ export class Parser {
         return this.peekToken().type == type;
     }
 
+    /**
+     * Expects a break token/character.
+     */
     private expectBreak(): void {
-
+        if (this.match(tt.SemiColon)) {
+            this.advance();
+        }
+        else if (!this.match(tt.RightBrace) && !this.match(tt.EOF) && !this.isLineBreak()) {
+            throw new SyntaxError(this.unexpectedTokenErrorMessage(this.peekToken()));
+        }
     }
 
-    private expectSemiColon(): void {
+    /**
+     * Returns whether the next token/character is a break.
+     * @returns Whether.
+     */
+    private isBreak(): boolean {
+        return this.match(tt.SemiColon) || this.match(tt.RightBrace)
+            || this.match(tt.EOF) || this.isLineBreak();
+    }
 
+    /**
+     * Checks whether there is a line break between the last token
+     * and the current token.
+     * @returns Whether.
+     */
+    private isLineBreak(): boolean {
+        if (this.tokens.length == 0) {
+            return false;
+        }
+
+        const lastToken = this.peekToken(-1);
+        const currentToken = this.peekToken();
+        const str = this.input.slice(lastToken.location.end.position + 1, currentToken.location.start.position);
+        return /[\n\r]/.test(str);
+    }
+
+    /**
+     * Expects a semi colon.
+     */
+    private expectSemiColon(): void {
+        if (this.match(tt.SemiColon)) {
+            this.advance();
+        } else {
+            throw new SyntaxError(this.unexpectedTokenErrorMessage(this.peekToken(), tt.SemiColon));
+        }
     }
 
     /**
@@ -266,15 +304,6 @@ export class Parser {
     }
 
     /**
-     * Parses an optional semicolon.
-     */
-    private parseSemiColon(): void {
-        if (this.match(tt.SemiColon)) {
-            this.advance();
-        }
-    }
-
-    /**
      * Parses a variable declaration.
      * @returns The variable declaration node.
      */
@@ -293,7 +322,7 @@ export class Parser {
             }
         }
 
-        this.parseSemiColon();
+        this.expectBreak();
         return this.finishNode(t.variableDeclaration(kindToken.value, declarators));
     }
 
@@ -483,8 +512,8 @@ export class Parser {
             init = this.parseVariableDeclaration();
         } else {
             init = this.parseExpression();
+            this.expectSemiColon();
         }
-        this.parseSemiColon();
         
         let test: t.Expression | null;
         if (this.match(tt.SemiColon)) {
@@ -492,7 +521,7 @@ export class Parser {
         } else {
             test = this.parseExpression();
         }
-        this.parseSemiColon();
+        this.expectSemiColon();
 
         let update: t.Expression | null;
         if (this.match(tt.RightParenthesis)) {
@@ -615,7 +644,7 @@ export class Parser {
     private parseDebuggerStatement(): t.DebuggerStatement {
         this.startNode();
         this.getNextToken(tt.Debugger);
-        this.parseSemiColon();
+        this.expectBreak();
         return this.finishNode(t.debuggerStatement());
     }
     
@@ -626,7 +655,7 @@ export class Parser {
     private parseBreakStatement(): t.BreakStatement {
         this.startNode();
         this.getNextToken(tt.Break);
-        this.parseSemiColon();
+        this.expectBreak();
         return this.finishNode(t.breakStatement());
     }
 
@@ -637,7 +666,7 @@ export class Parser {
     private parseContinueStatement(): t.ContinueStatement {
         this.startNode();
         this.getNextToken(tt.Continue);
-        this.parseSemiColon();
+        this.expectBreak();
         return this.finishNode(t.continueStatement());
     }
 
@@ -649,9 +678,11 @@ export class Parser {
         this.startNode();
         this.getNextToken(tt.Return);
 
-        const expression = this.parseExpression();
+        const expression = this.isBreak()
+            ? null
+            : this.parseExpression();
 
-        this.parseSemiColon();
+        this.expectBreak();
         return this.finishNode(t.returnStatement(expression));
     }
 
@@ -661,7 +692,7 @@ export class Parser {
      */
     private parseEmptyStatement(): t.EmptyStatement {
         this.startNode();
-        this.parseSemiColon();
+        this.expectSemiColon();
         return this.finishNode(t.emptyStatement());
     }
 
@@ -685,7 +716,7 @@ export class Parser {
     private parseExpressionStatement(): t.ExpressionStatement {
         this.startNode();
         const expression = this.parseExpression();
-        this.parseSemiColon();
+        this.expectBreak();
         return this.finishNode(t.expressionStatement(expression));
     }
 
@@ -1140,9 +1171,9 @@ export class Parser {
             this.advance();
         }
 
-        // TODO: check for semi colon or line break
-
-        const argument = this.parseExpression();
+        const argument = this.isBreak()
+            ? null
+            : this.parseExpression();
         
         return this.finishNode(t.yieldExpression(argument, delegate));
     }

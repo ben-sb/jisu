@@ -1,5 +1,5 @@
 import * as CharCodes from 'charcodes';
-import { Token } from './tokens/token';
+import { PartialToken, Token } from './tokens/token';
 import { matcherMap, MatchSuccess, OTHER_CHARS_KEY, TokenMatcher } from './matchers/tokenMatcher';
 import { tt } from './tokens/tokenTypes';
 import { SourcePosition } from './tokens/location';
@@ -69,7 +69,7 @@ export class Tokeniser {
             this.readWhitespace();
         }
 
-        this.addToken(new Token(tt.EOF, 'EOF'));
+        this.addToken(new PartialToken(tt.EOF, 'EOF'));
         return this.tokens;
     }
 
@@ -85,14 +85,14 @@ export class Tokeniser {
     /**
      * Adds a token to the list of tokens. Also sets the source location of
      * the token.
-     * @param token The token.
+     * @param partialToken The token.
      */
-    private addToken(token: Token): void {
-        token.location = {
+    private addToken(partialToken: PartialToken): void {
+        const location = {
             start: this.tokenStart,
             end: new SourcePosition(this.lineNumber, this.columnNumber, this.position - 1)
         };
-        this.tokens.push(token);
+        this.tokens.push(partialToken.toToken(location));
 
         this.tokenStart = new SourcePosition(this.lineNumber, this.columnNumber, this.position);
     }

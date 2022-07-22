@@ -1,1 +1,4 @@
-var a = 10;
+function* test() {
+    debugger
+    var a = 10;
+}

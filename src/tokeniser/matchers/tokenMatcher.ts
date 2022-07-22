@@ -1,10 +1,10 @@
-import { Token } from '../tokens/token';
+import { PartialToken } from '../tokens/token';
 import { TokenType, tt } from '../tokens/tokenTypes';
 
 export interface MatchSuccess {
     matched: true;
     length: number;
-    token: Token;
+    token: PartialToken;
 }
 
 export interface MatchFailure {
@@ -40,7 +40,7 @@ const characterMatcher = (type: TokenType, char: string): TokenMatcher => {
             ? {
                 matched: true,
                 length: 1,
-                token: new Token(type, char)
+                token: new PartialToken(type, char)
             }
             : {
                 matched: false
@@ -60,7 +60,7 @@ const keywordMatcher = (type: TokenType, str: string): TokenMatcher => {
             ? {
                 matched: true,
                 length: str.length,
-                token: new Token(type, str)
+                token: new PartialToken(type, str)
             }
             : {
                 matched: false
@@ -79,7 +79,7 @@ const regexMatcher = (type: TokenType, regex: RegExp): TokenMatcher => {
         const result = input.match(regex);
         if (result) {
             const match = result[0];
-            const token = new Token(type, match);
+            const token = new PartialToken(type, match);
             return {
                 matched: true,
                 length: match.length,
@@ -106,19 +106,19 @@ const matchPlusTokens = (input: string): TokenMatchResult => {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.Increment, '++')
+                token: new PartialToken(tt.Increment, '++')
             };
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.AddAssignment, '+=')
+                token: new PartialToken(tt.AddAssignment, '+=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Add, '+')
+                token: new PartialToken(tt.Add, '+')
             };
         }
     } else {
@@ -141,19 +141,19 @@ const matchMinusTokens = (input: string): TokenMatchResult => {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.Decrement, '--')
+                token: new PartialToken(tt.Decrement, '--')
             };
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.SubtractAssignment, '-=')
+                token: new PartialToken(tt.SubtractAssignment, '-=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Subtract, '-')
+                token: new PartialToken(tt.Subtract, '-')
             };
         }
     } else {
@@ -178,26 +178,26 @@ const matchStarTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.ExponentialAssignment, '**=')
+                    token: new PartialToken(tt.ExponentialAssignment, '**=')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.Exponential, '**')
+                    token: new PartialToken(tt.Exponential, '**')
                 };
             }
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.MultiplyAssignment, '*=')
+                token: new PartialToken(tt.MultiplyAssignment, '*=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Multiply, '*')
+                token: new PartialToken(tt.Multiply, '*')
             };
         }
     } else {
@@ -220,13 +220,13 @@ const matchDivideTokens = (input: string): TokenMatchResult => {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.DivideAssignment, '/=')
+                token: new PartialToken(tt.DivideAssignment, '/=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Divide, '/')
+                token: new PartialToken(tt.Divide, '/')
             };
         }
     } else {
@@ -249,13 +249,13 @@ const matchModulusTokens = (input: string): TokenMatchResult => {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.ModulusAssignment, '%=')
+                token: new PartialToken(tt.ModulusAssignment, '%=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Modulus, '%')
+                token: new PartialToken(tt.Modulus, '%')
             };
         }
     } else {
@@ -280,26 +280,26 @@ const matchLeftArrowTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.LeftShiftAssignment, '<<=')
+                    token: new PartialToken(tt.LeftShiftAssignment, '<<=')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.LeftShift, '<<')
+                    token: new PartialToken(tt.LeftShift, '<<')
                 };
             }
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.LessThanEqual, '<=')
+                token: new PartialToken(tt.LessThanEqual, '<=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.LessThan, '<')
+                token: new PartialToken(tt.LessThan, '<')
             };
         }
     } else {
@@ -326,39 +326,39 @@ const matchRightArrowTokens = (input: string): TokenMatchResult => {
                     return {
                         matched: true,
                         length: 4,
-                        token: new Token(tt.UnsignedRightShiftAssignment, '>>>=')
+                        token: new PartialToken(tt.UnsignedRightShiftAssignment, '>>>=')
                     };
                 } else {
                     return {
                         matched: true,
                         length: 3,
-                        token: new Token(tt.UnsignedRightShift, '>>>')
+                        token: new PartialToken(tt.UnsignedRightShift, '>>>')
                     };
                 }
             } else if (nextChar == '=') {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.RightShiftAssignment, '>>=')
+                    token: new PartialToken(tt.RightShiftAssignment, '>>=')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.RightShift, '>>')
+                    token: new PartialToken(tt.RightShift, '>>')
                 };
             }
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.GreaterThanEqual, '>=')
+                token: new PartialToken(tt.GreaterThanEqual, '>=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.GreaterThan, '>')
+                token: new PartialToken(tt.GreaterThan, '>')
             };
         }
     } else {
@@ -383,20 +383,20 @@ const matchEqualTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.StrictEquality, '===')
+                    token: new PartialToken(tt.StrictEquality, '===')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.Equality, '==')
+                    token: new PartialToken(tt.Equality, '==')
                 };
             }
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Assignment, '=')
+                token: new PartialToken(tt.Assignment, '=')
             };
         }
     } else {
@@ -421,20 +421,20 @@ const matchEqualTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.StrictInequality, '!==')
+                    token: new PartialToken(tt.StrictInequality, '!==')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.Inequality, '!=')
+                    token: new PartialToken(tt.Inequality, '!=')
                 };
             }
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Not, '!')
+                token: new PartialToken(tt.Not, '!')
             };
         }
     } else {
@@ -459,26 +459,26 @@ const matchBarTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.OrAssignment, '||=')
+                    token: new PartialToken(tt.OrAssignment, '||=')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.Or, '||')
+                    token: new PartialToken(tt.Or, '||')
                 };
             }
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.BitwiseOrAssignment, '|=')
+                token: new PartialToken(tt.BitwiseOrAssignment, '|=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.BitwiseOr, '|')
+                token: new PartialToken(tt.BitwiseOr, '|')
             };
         }
     } else {
@@ -501,13 +501,13 @@ const matchCaretTokens = (input: string): TokenMatchResult => {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.BitwiseXorAssignment, '^=')
+                token: new PartialToken(tt.BitwiseXorAssignment, '^=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.BitwiseXor, '^')
+                token: new PartialToken(tt.BitwiseXor, '^')
             };
         }
     } else {
@@ -532,26 +532,26 @@ const matchAmpersandTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.AndAssignment, '&&=')
+                    token: new PartialToken(tt.AndAssignment, '&&=')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.And, '&&')
+                    token: new PartialToken(tt.And, '&&')
                 };
             }
         } else if (nextChar == '=') {
             return {
                 matched: true,
                 length: 2,
-                token: new Token(tt.BitwiseAndAssignment, '&=')
+                token: new PartialToken(tt.BitwiseAndAssignment, '&=')
             };
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.BitwiseAnd, '&')
+                token: new PartialToken(tt.BitwiseAnd, '&')
             };
         }
     } else {
@@ -576,20 +576,20 @@ const matchQuestionTokens = (input: string): TokenMatchResult => {
                 return {
                     matched: true,
                     length: 3,
-                    token: new Token(tt.NullCoalescingAssignment, '??=')
+                    token: new PartialToken(tt.NullCoalescingAssignment, '??=')
                 };
             } else {
                 return {
                     matched: true,
                     length: 2,
-                    token: new Token(tt.NullCoalescing, '??')
+                    token: new PartialToken(tt.NullCoalescing, '??')
                 };
             }
         } else {
             return {
                 matched: true,
                 length: 1,
-                token: new Token(tt.Question, '?')
+                token: new PartialToken(tt.Question, '?')
             };
         }
     } else {
