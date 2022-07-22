@@ -1,4 +1,3 @@
-import * as CharCodes from 'charcodes';
 import { PartialToken, Token } from './tokens/token';
 import { matcherMap, MatchSuccess, OTHER_CHARS_KEY, TokenMatcher } from './matchers/tokenMatcher';
 import { tt } from './tokens/tokenTypes';
@@ -113,16 +112,16 @@ export class Tokeniser {
             const charCode = this.getCharCode();
 
             switch (charCode) {
-                case CharCodes.space:
-                case CharCodes.carriageReturn:
-                case CharCodes.tab: {
+                case 32: // space
+                case 13: // carriage return
+                case 9: { // tab
                     this.advance();
                     this.tokenStart.position++;
                     this.tokenStart.column++;
                     break;
                 }
 
-                case CharCodes.lineFeed: {
+                case 10: { // new line
                     this.position++;
                     this.lineNumber++;
                     this.columnNumber = 0;

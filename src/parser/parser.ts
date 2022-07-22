@@ -81,8 +81,9 @@ export class Parser {
      * @returns The node.
      */
     private finishNode<T extends t.Node>(node: T): T {
-        // TODO: emit debug logs here
-        console.log(`Parsed ${node.type}`);
+        if (this.options.emitLogs) {
+            console.log(`Parsed ${node.type}`);
+        }
         if (this.options.omitLocations) {
             return node;
         }
@@ -1420,6 +1421,7 @@ export class Parser {
 }
 
 export interface ParserOptions {
+    emitLogs?: boolean;
     omitLocations?: boolean;
 }
 
