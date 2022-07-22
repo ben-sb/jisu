@@ -44,7 +44,7 @@ type TokenTypeKey = 'EOF' | 'Identifier' | 'Number' | 'LeftBrace'
     | 'GreaterThan' | 'GreaterThanEqual' | 'LeftShift' | 'RightShift'
     | 'UnsignedRightShift' | 'Add' | 'Subtract' | 'Multiply' | 'Divide'
     | 'Modulus' | 'Exponential' | 'Not' | 'BitwiseNot' | 'LeftBracket'
-    | 'RightBracket' | 'LeftParenthesis' | 'RightParenthesis';
+    | 'RightBracket' | 'Dot' | 'LeftParenthesis' | 'RightParenthesis';
 
 export const tt: TokenTypes = {
     EOF: new TokenType('eof'),
@@ -139,6 +139,7 @@ export const tt: TokenTypes = {
     BitwiseNot: new TokenType('~', { precedence: 15, rightAssociative: true }),
     LeftBracket: new TokenType('[', { precedence: 17 }),
     RightBracket: new TokenType(']', { precedence: 17 }),
+    Dot: new TokenType('.', { precedence: 18 }),
     LeftParenthesis: new TokenType('(', { precedence: 18 }),
     RightParenthesis: new TokenType(')', { precedence: 18 })
 };

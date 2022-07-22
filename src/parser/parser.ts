@@ -767,7 +767,11 @@ export class Parser {
         } else if (updateOperatorTokens.has(nextToken.type)) {
             expression = this.parsePostfixUpdateExpression(expression);
             nextToken = this.peekToken(); // could also be grouped
-        } 
+        } else if (nextToken.type == tt.LeftBracket) {
+            return this.parseMemberExpression(expression, true);
+        } else if (nextToken.type == tt.Dot) {
+            return this.parseMemberExpression(expression, false);
+        }
         
         if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
             return this.parseGroupedExpression(expression);
@@ -1013,6 +1017,23 @@ export class Parser {
         }
 
         return this.finishNode(t.sequenceExpression(expressions));
+    }
+
+    /**
+     * Parses a member expression.
+     * @param object The object of the member expression.
+     * @param computed Whether it is computed (i.e. a[b] rather than a.b)
+     */
+    private parseMemberExpression(object: t.Expression, computed: boolean): t.MemberExpression {
+        this.getNextToken(computed ? tt.LeftBracket : tt.Dot);
+        
+        const property = this.parseExpression();
+
+        if (computed) {
+            this.getNextToken(tt.RightBracket);
+        }
+
+        return this.finishNode(t.memberExpression(object, property, computed));
     }
 
     /**
