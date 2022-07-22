@@ -816,6 +816,10 @@ export class Parser {
             case tt.True:
             case tt.False:
                 return this.parseBooleanLiteral();
+            case tt.String:
+                return this.parseStringLiteral();
+            case tt.TemplateString:
+                return this.parseTemplateLiteral();
             case tt.Null:
                 return this.parseNullLiteral();
             case tt.This:
@@ -904,6 +908,26 @@ export class Parser {
         const token = this.getNextToken(booleanValueTokens);
         const value = token.type == tt.True;
         return this.finishNode(t.booleanLiteral(value));
+    }
+
+    /**
+     * Parses a string literal.
+     * @returns The string literal node.
+     */
+    private parseStringLiteral(): t.StringLiteral {
+        this.startNode();
+        const value = this.getNextToken(tt.String);
+        return this.finishNode(t.stringLiteral(value.value));
+    }
+
+    /**
+     * Parses a template literal.
+     * @returns The template literal node.
+     */
+    private parseTemplateLiteral(): t.TemplateLiteral {
+        this.startNode();
+        const value = this.getNextToken(tt.TemplateString);
+        return this.finishNode(t.templateLiteral(value.value));
     }
 
     /**

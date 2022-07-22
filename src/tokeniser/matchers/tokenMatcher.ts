@@ -621,6 +621,88 @@ const matchQuestionTokens = (input: string): TokenMatchResult => {
     }
 };
 
+/**
+ * Matches single line strings (i.e. strings that start with ' or ").
+ * @param input The input string.
+ * @returns The match result.
+ */
+export const matchSingleLineString = (input: string): TokenMatchResult => {
+    const firstChar = input.charAt(0);
+    if (firstChar == "'" || firstChar == '"') {
+        let pos = 1;
+        let value = '';
+        let lastChar = '';
+        while (true) {
+            if (pos >= input.length) {
+                return {
+                    matched: false
+                };
+            }
+
+            const char = input.charAt(pos++);
+            if ((char == firstChar && lastChar != '\\')) {
+                break;
+            } else if (char == '\n') {
+                return { 
+                    matched: false
+                };
+            }
+
+            lastChar = char;
+            value += char;
+        }
+
+        return {
+            matched: true,
+            length: value.length + 2,
+            token: new PartialToken(tt.String, value)
+        };
+    } else {
+        return {
+            matched: false
+        }
+    }
+};
+
+/**
+ * Matches a template string (i.e. strings that start with `).
+ * @param input The input string.
+ * @returns The match result.
+ */
+export const matchTemplateString = (input: string): TokenMatchResult => {
+    const firstChar = input.charAt(0);
+    if (firstChar == "`") {
+        let pos = 1;
+        let value = '';
+        let lastChar = '';
+        while (true) {
+            if (pos >= input.length) {
+                return {
+                    matched: false
+                };
+            }
+
+            const char = input.charAt(pos++);
+            if ((char == firstChar && lastChar != '\\')) {
+                break;
+            }
+
+            lastChar = char;
+            value += char;
+        }
+
+        return {
+            matched: true,
+            length: value.length + 2,
+            token: new PartialToken(tt.TemplateString, value)
+        };
+    } else {
+        return {
+            matched: false
+        }
+    }
+};
+
 // used as key for all other characters in matcher map
 export const OTHER_CHARS_KEY = {};
 
@@ -668,10 +750,11 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['}', [characterMatcher(tt.RightBrace, '}')]],
     [':', [characterMatcher(tt.Colon, ':')]],
     [';', [characterMatcher(tt.SemiColon, ';')]],
-    ["'", [characterMatcher(tt.SingleQuote, "'")]],
-    ['"', [characterMatcher(tt.DoubleQuote, '"')]],
-    ['`', [characterMatcher(tt.Backtick, '`')]],
     ['.', [stringMatcher(tt.Ellipsis, '...'), characterMatcher(tt.Dot, '.')]],
+
+    ["'", [matchSingleLineString]],
+    ['"', [matchSingleLineString]],
+    ['`', [matchTemplateString]],
 
     // matches all other characters
     [OTHER_CHARS_KEY, [

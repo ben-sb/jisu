@@ -25,10 +25,9 @@ interface TokenOptions {
 
 type TokenTypes = { [name in TokenTypeKey]: TokenType };
 
-type TokenTypeKey = 'EOF' | 'Identifier' | 'Number' | 'LeftBrace'
-    | 'RightBrace' | 'Question' | 'Colon' | 'SemiColon' | 'Increment'
-    | 'Decrement' | 'Ellipsis' | 'SingleQuote' | 'DoubleQuote'
-    | 'Backtick'
+type TokenTypeKey = 'EOF' | 'Identifier' | 'Number' | 'String' | 'TemplateString' 
+    | 'LeftBrace' | 'RightBrace' | 'Question' | 'Colon' | 'SemiColon' 
+    | 'Increment' | 'Decrement' | 'Ellipsis' 
     | 'Async' | 'Await' | 'Break' | 'Case'
     | 'Catch' | 'Const' | 'Continue' | 'Debugger' | 'Default' | 'Delete'
     | 'Do' | 'Else' | 'False' | 'Finally' | 'For' | 'Function' | 'If'
@@ -53,6 +52,8 @@ export const tt: TokenTypes = {
     EOF: new TokenType('eof'),
     Identifier: new TokenType('identifier'),
     Number: new TokenType('number'),
+    String: new TokenType('string'),
+    TemplateString: new TokenType('templateString'),
     LeftBrace: new TokenType('{'),
     RightBrace: new TokenType('}'),
     Question: new TokenType('?'),
@@ -61,9 +62,6 @@ export const tt: TokenTypes = {
     Increment: new TokenType('++'),
     Decrement: new TokenType('--'),
     Ellipsis: new TokenType('...'),
-    SingleQuote: new TokenType("'"),
-    DoubleQuote: new TokenType('"'),
-    Backtick: new TokenType('`'),
 
     // keywords
     Async: new TokenType('async', { isKeyword: true }),
