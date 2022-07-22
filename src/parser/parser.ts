@@ -32,7 +32,7 @@ export class Parser {
         this.startNode();
     
         const statements = [];
-        while (this.position < this.tokens.length && this.peekToken().type != tt.EOF) {
+        while (this.position < this.tokens.length && !this.match(tt.EOF)) {
             statements.push(this.parseStatement());
         }
 
@@ -196,6 +196,23 @@ export class Parser {
     }
 
     /**
+     * Returns whether the next token is of a given type.
+     * @param type The token type.
+     * @returns Whether.
+     */
+    private match(type: TokenType): boolean {
+        return this.peekToken().type == type;
+    }
+
+    private expectBreak(): void {
+
+    }
+
+    private expectSemiColon(): void {
+
+    }
+
+    /**
      * Parses a single statement.
      * @returns The statement node.
      */
@@ -252,7 +269,7 @@ export class Parser {
      * Parses an optional semicolon.
      */
     private parseSemiColon(): void {
-        if (this.peekToken().type == tt.SemiColon) {
+        if (this.match(tt.SemiColon)) {
             this.advance();
         }
     }
@@ -269,7 +286,7 @@ export class Parser {
         while (true) {
             declarators.push(this.parseVariableDeclarator());
 
-            if (this.peekToken().type == tt.Comma) {
+            if (this.match(tt.Comma)) {
                 this.advance();
             } else {
                 break;
@@ -303,7 +320,7 @@ export class Parser {
     private parseFunction(isDeclaration: boolean): t.FunctionDeclaration | t.FunctionExpression {
         this.startNode();
         let async = false;
-        if (this.peekToken().type == tt.Async) {
+        if (this.match(tt.Async)) {
             async = true;
             this.advance();
         }
@@ -311,12 +328,12 @@ export class Parser {
         this.getNextToken(tt.Function);
 
         let generator = false;
-        if (this.peekToken().type == tt.Multiply) {
+        if (this.match(tt.Multiply)) {
             generator = true;
             this.advance();
         }
         
-        const identifier = this.peekToken().type == tt.LeftParenthesis
+        const identifier = this.match(tt.LeftParenthesis)
             ? null
             : this.parseIdentifier();
         if (isDeclaration && !identifier) {
@@ -340,13 +357,13 @@ export class Parser {
         this.getNextToken(tt.LeftParenthesis);
 
         const params = [];
-        while (this.peekToken().type != tt.RightParenthesis) {
+        while (!this.match(tt.RightParenthesis)) {
             const pattern = this.parsePattern();
             params.push(pattern);
 
-            if (this.peekToken().type == tt.Comma) {
+            if (this.match(tt.Comma)) {
                 this.advance();
-                if (this.peekToken().type == tt.RightParenthesis) {
+                if (this.match(tt.RightParenthesis)) {
                     this.addExtra(pattern, 'trailingComma', true);
                 }
             } else {
@@ -368,7 +385,7 @@ export class Parser {
         this.getNextToken(tt.LeftBrace);
 
         const statements = [];
-        while (this.peekToken().type != tt.RightBrace) {
+        while (!this.match(tt.RightBrace)) {
             statements.push(this.parseStatement());
         }
 
@@ -393,7 +410,7 @@ export class Parser {
         const consequent = this.parseStatement();
 
         let alternate: t.Statement | undefined;
-        if (this.peekToken().type == tt.Else) {
+        if (this.match(tt.Else)) {
             this.getNextToken(tt.Else);
             alternate = this.parseStatement();
         }
@@ -416,7 +433,7 @@ export class Parser {
         this.getNextToken(tt.LeftBrace);
 
         const cases = [];
-        while (this.peekToken().type != tt.RightBrace) {
+        while (!this.match(tt.RightBrace)) {
             cases.push(this.parseSwitchCase());
         }
 
@@ -432,7 +449,7 @@ export class Parser {
     private parseSwitchCase(): t.SwitchCase {
         this.startNode();
         let test: t.Expression | null;
-        if (this.peekToken().type == tt.Default) {
+        if (this.match(tt.Default)) {
             test = null;
             this.advance();
         } else {
@@ -442,7 +459,7 @@ export class Parser {
         this.getNextToken(tt.Colon);
 
         const consequent = [this.parseStatement()];
-        while (this.peekToken().type != tt.Case && this.peekToken().type != tt.Default && this.peekToken().type != tt.RightBrace) {
+        while (!this.match(tt.Case) && !this.match(tt.Default) && this.match(tt.RightBrace)) {
             consequent.push(this.parseStatement());
         }
 
@@ -459,10 +476,10 @@ export class Parser {
         this.getNextToken(tt.LeftParenthesis);
 
         let init: t.VariableDeclaration | t.Expression | null;
-        if (this.peekToken().type == tt.SemiColon) {
+        if (this.match(tt.SemiColon)) {
             init = null;
             this.advance();
-        } else if (this.peekToken().type == tt.Var) {
+        } else if (this.match(tt.Var)) {
             init = this.parseVariableDeclaration();
         } else {
             init = this.parseExpression();
@@ -470,7 +487,7 @@ export class Parser {
         this.parseSemiColon();
         
         let test: t.Expression | null;
-        if (this.peekToken().type == tt.SemiColon) {
+        if (this.match(tt.SemiColon)) {
             test = null;
         } else {
             test = this.parseExpression();
@@ -478,7 +495,7 @@ export class Parser {
         this.parseSemiColon();
 
         let update: t.Expression | null;
-        if (this.peekToken().type == tt.RightParenthesis) {
+        if (this.match(tt.RightParenthesis)) {
             update = null;
         } else {
             update = this.parseExpression();
@@ -537,12 +554,12 @@ export class Parser {
         const block = this.parseBlockStatement();
 
         let handler: t.CatchClause | null = null;
-        if (this.peekToken().type == tt.Catch) {
+        if (this.match(tt.Catch)) {
             handler = this.parseCatchClause();
         }
 
         let finalizer: t.BlockStatement | null = null;
-        if (this.peekToken().type == tt.Finally) {
+        if (this.match(tt.Finally)) {
             this.advance();
             finalizer = this.parseBlockStatement();
         }
@@ -563,7 +580,7 @@ export class Parser {
         this.getNextToken(tt.Catch);
 
         let param: t.Identifier | null = null;
-        if (this.peekToken().type == tt.LeftParenthesis) {
+        if (this.match(tt.LeftParenthesis)) {
             this.advance();
             param = this.parseIdentifier();
             this.getNextToken(tt.RightParenthesis);
@@ -956,7 +973,7 @@ export class Parser {
             const nextExpression = this.parseExpression({ canBeSequence: false });
             expressions.push(nextExpression);
 
-            if (this.peekToken().type == tt.Comma) {
+            if (this.match(tt.Comma)) {
                 this.advance();
             } else {
                 break;
@@ -998,19 +1015,19 @@ export class Parser {
         this.getNextToken(tt.LeftBracket);
 
         const elements = [];
-        while (this.peekToken().type != tt.RightBracket) {
-            if (this.peekToken().type == tt.Comma) {
+        while (!this.match(tt.RighBracket)) {
+            if (this.match(tt.Comma)) {
                 elements.push(null);
                 this.advance();
             } else {
-                const element = this.peekToken().type == tt.Ellipsis
+                const element = this.match(tt.Ellipsis)
                     ? this.parseSpreadElement()
                     : this.parseExpression({ canBeSequence: false });
                 elements.push(element);
 
-                if (this.peekToken().type == tt.Comma) {
+                if (this.match(tt.Comma)) {
                     this.advance();
-                    if (this.peekToken().type == tt.RightBracket) {
+                    if (this.match(tt.RightBracket)) {
                         this.addExtra(element, 'trailingComma', true);
                     }
                 } else {
@@ -1032,13 +1049,13 @@ export class Parser {
         this.getNextToken(tt.LeftBrace);
 
         const properties = [];
-        while (this.peekToken().type != tt.RightBrace) {
+        while (!this.match(tt.RightBrace)) {
             const member = this.parseObjectMember();
             properties.push(member);
 
-            if (this.peekToken().type == tt.Comma) {
+            if (this.match(tt.Comma)) {
                 this.advance();
-                if (this.peekToken().type == tt.RightBrace) {
+                if (this.match(tt.RightBrace)) {
                     this.addExtra(member, 'trailingComma', true);
                 }
             } else {
@@ -1118,7 +1135,7 @@ export class Parser {
         this.getNextToken(tt.Yield);
 
         let delegate = false;
-        if (this.peekToken().type == tt.Multiply) {
+        if (this.match(tt.Multiply)) {
             delegate = true;
             this.advance();
         }
