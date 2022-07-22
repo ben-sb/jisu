@@ -28,9 +28,9 @@ type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | AssignmentExpression | UnaryExpression | UpdateExpression 
     | BinaryExpression | LogicalExpression | SequenceExpression
-    | MemberExpression | ThisExpression | SuperExpression | YieldExpression 
-    | AwaitExpression | FunctionExpression | ArrayExpression 
-    | ObjectExpression | DoExpression;
+    | MemberExpression | CallExpression | ThisExpression | SuperExpression 
+    | YieldExpression | AwaitExpression | FunctionExpression 
+    | ArrayExpression | ObjectExpression | DoExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -239,6 +239,22 @@ export function memberExpression(
         object,
         property,
         computed
+    };
+}
+
+export type CallExpression = Node & {
+    type: 'CallExpression';
+    callee: Expression;
+    arguments: (Expression | SpreadElement)[];
+}
+export function callExpression(
+    callee: Expression, 
+    args: (Expression | SpreadElement)[]
+): CallExpression {
+    return {
+        type: 'CallExpression',
+        callee,
+        arguments: args
     };
 }
 

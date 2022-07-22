@@ -49,9 +49,31 @@ const characterMatcher = (type: TokenType, char: string): TokenMatcher => {
 };
 
 /**
- * Returns a matcher for a keyword string.
+ * Returns a matcher for a string.
  * @param type The type of the token.
- * @param str The keyword string to be matched.
+ * @param str The string to be matched.
+ * @returns The token matcher.
+ */
+ const stringMatcher = (type: TokenType, str: string): TokenMatcher => {
+    return (input: string) => {
+        return input.startsWith(str)
+            ? {
+                matched: true,
+                length: str.length,
+                token: new PartialToken(type, str)
+            }
+            : {
+                matched: false
+            };
+    };
+};
+
+/**
+ * Returns a matcher for a keyword. This differs from a string matcher
+ * as the next character cannot be a valid identifier character (as then
+ * the token must be interpreted as an identifier).
+ * @param type The type of the token.
+ * @param str The keyword to be matched.
  * @returns The token matcher.
  */
 const keywordMatcher = (type: TokenType, str: string): TokenMatcher => {
@@ -645,7 +667,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['}', [characterMatcher(tt.RightBrace, '}')]],
     [':', [characterMatcher(tt.Colon, ':')]],
     [';', [characterMatcher(tt.SemiColon, ';')]],
-    ['.', [keywordMatcher(tt.Ellipsis, '...'), characterMatcher(tt.Dot, '.')]],
+    ['.', [stringMatcher(tt.Ellipsis, '...'), characterMatcher(tt.Dot, '.')]],
 
     // matches all other characters
     [OTHER_CHARS_KEY, [

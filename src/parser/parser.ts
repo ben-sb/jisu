@@ -771,6 +771,8 @@ export class Parser {
             return this.parseMemberExpression(expression, true);
         } else if (nextToken.type == tt.Dot) {
             return this.parseMemberExpression(expression, false);
+        } else if (nextToken.type == tt.LeftParenthesis) {
+            return this.parseCallExpression(expression);
         }
         
         if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
@@ -1022,7 +1024,8 @@ export class Parser {
     /**
      * Parses a member expression.
      * @param object The object of the member expression.
-     * @param computed Whether it is computed (i.e. a[b] rather than a.b)
+     * @param computed Whether it is computed (i.e. a[b] rather than a.b).
+     * @returns The member expression node.
      */
     private parseMemberExpression(object: t.Expression, computed: boolean): t.MemberExpression {
         this.getNextToken(computed ? tt.LeftBracket : tt.Dot);
@@ -1034,6 +1037,36 @@ export class Parser {
         }
 
         return this.finishNode(t.memberExpression(object, property, computed));
+    }
+
+    /**
+     * Parses a call expression.
+     * @param callee The callee expression.
+     * @returns The call expression node.
+     */
+    private parseCallExpression(callee: t.Expression): t.CallExpression {
+        this.getNextToken(tt.LeftParenthesis);
+
+        const args = [];
+        while (!this.match(tt.RightParenthesis)) {
+            const arg = this.match(tt.Ellipsis)
+                ? this.parseSpreadElement()
+                : this.parseExpression({ canBeSequence: false });
+            args.push(arg);
+
+            if (this.match(tt.Comma)) {
+                this.advance();
+                if (this.match(tt.RightParenthesis)) {
+                    this.addExtra(arg, 'trailingComma', true);
+                }
+            } else {
+                break;
+            }
+        }
+
+        this.getNextToken(tt.RightParenthesis);
+
+        return this.finishNode(t.callExpression(callee, args));
     }
 
     /**
