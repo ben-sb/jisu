@@ -1,2 +1,1 @@
-var a = new RegExp(b, c)
-10
+var a = null;

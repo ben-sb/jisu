@@ -816,6 +816,8 @@ export class Parser {
             case tt.True:
             case tt.False:
                 return this.parseBooleanLiteral();
+            case tt.Null:
+                return this.parseNullLiteral();
             case tt.This:
                 return this.parseThisExpression();
             case tt.Super:
@@ -902,6 +904,16 @@ export class Parser {
         const token = this.getNextToken(booleanValueTokens);
         const value = token.type == tt.True;
         return this.finishNode(t.booleanLiteral(value));
+    }
+
+    /**
+     * Parses a null literal.
+     * @returns The null literal node.
+     */
+    private parseNullLiteral(): t.NullLiteral {
+        this.startNode();
+        this.getNextToken(tt.Null);
+        return this.finishNode(t.nullLiteral());
     }
 
     /**
@@ -1042,6 +1054,7 @@ export class Parser {
      * @returns The member expression node.
      */
     private parseMemberExpression(object: t.Expression, computed: boolean): t.MemberExpression {
+        this.startNode();
         this.getNextToken(computed ? tt.LeftBracket : tt.Dot);
         
         const property = this.parseExpression();
@@ -1059,6 +1072,7 @@ export class Parser {
      * @returns The call expression node.
      */
     private parseCallExpression(callee: t.Expression): t.CallExpression {
+        this.startNode();
         this.getNextToken(tt.LeftParenthesis);
 
         const args = [];
@@ -1088,6 +1102,7 @@ export class Parser {
      * @returns The new expression node.
      */
     private parseNewExpression(): t.NewExpression {
+        this.startNode();
         this.getNextToken(tt.New);
 
         const callee = this.parseExpression({ canBeCall: false });
@@ -1124,6 +1139,7 @@ export class Parser {
      * @returns The conditional expression node.
      */
     private parseConditionalExpression(test: t.Expression): t.ConditionalExpression {
+        this.startNode();
         this.getNextToken(tt.Question);
 
         const consequent = this.parseExpression();

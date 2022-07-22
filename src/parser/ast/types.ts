@@ -26,6 +26,7 @@ type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
 
 // expressions
 export type Expression = Identifier | NumericLiteral | BooleanLiteral
+    | StringLiteral | NullLiteral
     | AssignmentExpression | UnaryExpression | UpdateExpression 
     | BinaryExpression | LogicalExpression | SequenceExpression
     | MemberExpression | CallExpression | NewExpression 
@@ -63,6 +64,26 @@ export function booleanLiteral(value: boolean): BooleanLiteral {
     return {
         type: 'BooleanLiteral',
         value
+    };
+}
+
+export type StringLiteral = Node & {
+    type: 'StringLiteral';
+    value: string;
+}
+export function stringLiteral(value: string): StringLiteral {
+    return {
+        type: 'StringLiteral',
+        value
+    };
+}
+
+export type NullLiteral = Node & {
+    type: 'NullLiteral';
+}
+export function nullLiteral(): NullLiteral {
+    return {
+        type: 'NullLiteral'
     };
 }
 

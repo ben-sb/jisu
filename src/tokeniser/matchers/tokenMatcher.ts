@@ -637,7 +637,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['f', [keywordMatcher(tt.False, 'false'), keywordMatcher(tt.Finally, 'finally'), keywordMatcher(tt.For, 'for'), keywordMatcher(tt.Function, 'function')]],
     ['i', [keywordMatcher(tt.If, 'if'), keywordMatcher(tt.InstanceOf, 'instanceof'), keywordMatcher(tt.In, 'in')]],
     ['l', [keywordMatcher(tt.Let, 'let')]],
-    ['n', [keywordMatcher(tt.New, 'new')]],
+    ['n', [keywordMatcher(tt.New, 'new'), keywordMatcher(tt.Null, 'null')]],
     ['r', [keywordMatcher(tt.Return, 'return')]],
     ['s', [keywordMatcher(tt.Super, 'super'), keywordMatcher(tt.Switch, 'switch')]],
     ['t', [keywordMatcher(tt.This, 'this'), keywordMatcher(tt.Throw, 'throw'), keywordMatcher(tt.True, 'true'), keywordMatcher(tt.Try, 'try'), keywordMatcher(tt.Typeof, 'typeof')]],
@@ -668,6 +668,9 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['}', [characterMatcher(tt.RightBrace, '}')]],
     [':', [characterMatcher(tt.Colon, ':')]],
     [';', [characterMatcher(tt.SemiColon, ';')]],
+    ["'", [characterMatcher(tt.SingleQuote, "'")]],
+    ['"', [characterMatcher(tt.DoubleQuote, '"')]],
+    ['`', [characterMatcher(tt.Backtick, '`')]],
     ['.', [stringMatcher(tt.Ellipsis, '...'), characterMatcher(tt.Dot, '.')]],
 
     // matches all other characters
