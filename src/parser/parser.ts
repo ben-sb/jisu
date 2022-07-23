@@ -787,7 +787,10 @@ export class Parser {
         } else if (nextToken.type == tt.Question) {
             return this.parseConditionalExpression(expression);
         } else if (nextToken.type == tt.Arrow) {
-            return this.parseArrowFunctionExpression([this.expressionToPattern(expression)]);
+            const params = expression.type == 'SequenceExpression'
+                ? expression.expressions.map(this.expressionToPattern.bind(this))
+                : [this.expressionToPattern(expression)];
+            return this.parseArrowFunctionExpression(params);
         }
         
         if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
@@ -837,7 +840,7 @@ export class Parser {
                     this.getNextToken(tt.RightParenthesis);
                     return this.parseArrowFunctionExpression([]);
                 } else {
-                    return this.parseParenthesisedExpression();
+                    return this.parseParenthesisedExpression() as t.Expression;
                 }
             }
             case tt.Function:
@@ -1068,8 +1071,10 @@ export class Parser {
         const expressions = [firstExpression];
 
         while (true) {
-            const nextExpression = this.parseExpression({ canBeSequence: false });
-            expressions.push(nextExpression);
+            const nextExpression = this.match(tt.Ellipsis)
+                ? this.parseSpreadElement()
+                : this.parseExpression({ canBeSequence: false });
+            expressions.push(nextExpression as t.Expression);
 
             if (this.match(tt.Comma)) {
                 this.advance();
@@ -1200,10 +1205,12 @@ export class Parser {
      * Parses an expression within parenthesis.
      * @returns The expression node.
      */
-    private parseParenthesisedExpression(): t.Expression {
+    private parseParenthesisedExpression(): t.Expression | t.SpreadElement {
         this.startNode();
         this.getNextToken(tt.LeftParenthesis);
-        const expression = this.parseExpression();
+        const expression = this.match(tt.Ellipsis)
+            ? this.parseSpreadElement()
+            : this.parseExpression();
         this.getNextToken(tt.RightParenthesis);
         return this.finishNode(expression);
     }
@@ -1402,7 +1409,7 @@ export class Parser {
      * @param expression The expression.
      * @returns The pattern.
      */
-    private expressionToPattern(expression: t.Expression): t.Pattern {
+    private expressionToPattern(expression: t.Expression | t.SpreadElement): t.Pattern {
         if (t.isPattern(expression)) {
             return expression;
         }
@@ -1414,6 +1421,8 @@ export class Parser {
                 return this.arrayExpressionToPattern(expression);
             case 'ObjectExpression':
                 return this.objectExpressionToPattern(expression);
+            case 'SpreadElement':
+                return this.spreadElementToPattern(expression);
             default:
                 throw new SyntaxError(this.unexpectedNodeErrorMessage(expression, `Invalid pattern ${expression.type}`));
         }
