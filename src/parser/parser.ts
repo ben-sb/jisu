@@ -738,15 +738,18 @@ export class Parser {
      * (defaults to true).
      * @param canBeCall Whether it can be a call expression (defaults to
      * true).
+     * @param canBeMember Whether it can be a member expression (defaults to
+     * true).
      * @returns The expression node.
      */
     private parseExpression({ 
         canBeGrouped = true, 
         canBeSequence = true,
         canBeAssignment = true,
-        canBeCall = true
+        canBeCall = true,
+        canBeMember = true
     }: ParseExpressionParams = {}): t.Expression {
-        const expression = this.parseExpression2({ canBeGrouped, canBeSequence, canBeAssignment, canBeCall });
+        const expression = this.parseExpression2({ canBeGrouped, canBeSequence, canBeAssignment, canBeCall, canBeMember });
         const nextToken = this.peekToken();
 
         if (canBeSequence && nextToken.type == tt.Comma) {
@@ -773,22 +776,29 @@ export class Parser {
         canBeGrouped = true, 
         canBeSequence = true,
         canBeAssignment = true,
-        canBeCall = true
+        canBeCall = true,
+        canBeMember = true
     }: ParseExpressionParams = {}): t.Expression {
         let expression = this.parseExpressionInner();
         let nextToken = this.peekToken();
+
+        // these can repeat back to back and don't call parseExpression recursively so need to keep parsing
+        while ((canBeMember && (nextToken.type == tt.LeftBracket || nextToken.type == tt.Dot)) || nextToken.type == tt.LeftParenthesis) {
+            if (nextToken.type == tt.LeftBracket) {
+                expression = this.parseMemberExpression(expression, true);
+            } else if (nextToken.type == tt.Dot) {
+                expression = this.parseMemberExpression(expression, false);
+            } else if (canBeCall && nextToken.type == tt.LeftParenthesis) {
+                expression = this.parseCallExpression(expression);
+            }
+            nextToken = this.peekToken();
+        }
 
         if (canBeAssignment && assignmentOperatorTokens.has(nextToken.type)) {
             return this.parseAssignmentExpression(expression);
         } else if (updateOperatorTokens.has(nextToken.type)) {
             expression = this.parsePostfixUpdateExpression(expression);
             nextToken = this.peekToken(); // could also be grouped
-        } else if (nextToken.type == tt.LeftBracket) {
-            return this.parseMemberExpression(expression, true);
-        } else if (nextToken.type == tt.Dot) {
-            return this.parseMemberExpression(expression, false);
-        } else if (canBeCall && nextToken.type == tt.LeftParenthesis) {
-            return this.parseCallExpression(expression);
         } else if (nextToken.type == tt.Question) {
             return this.parseConditionalExpression(expression);
         } else if (nextToken.type == tt.Arrow) {
@@ -1108,7 +1118,7 @@ export class Parser {
         this.startNode();
         this.getNextToken(computed ? tt.LeftBracket : tt.Dot);
         
-        const property = this.parseExpression();
+        const property = this.parseExpression({ canBeMember: false });
 
         if (computed) {
             this.getNextToken(tt.RightBracket);
@@ -1581,6 +1591,7 @@ export interface ParserOptions {
 interface ParseExpressionParams {
     canBeGrouped?: boolean;
     canBeSequence?: boolean;
-    canBeAssignment?: boolean,
-    canBeCall?: boolean
+    canBeAssignment?: boolean;
+    canBeCall?: boolean;
+    canBeMember?: boolean;
 }
