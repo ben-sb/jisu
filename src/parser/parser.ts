@@ -396,7 +396,12 @@ export class Parser {
             if (this.match(tt.Comma)) {
                 this.advance();
                 if (this.match(tt.RightParenthesis)) {
+                    if (pattern.type == 'RestElement') {
+                        throw new SyntaxError(this.unexpectedNodeErrorMessage(pattern, 'A rest element must be last in a parameter list'));
+                    }
                     this.addExtra(pattern, 'trailingComma', true);
+                } else if (pattern.type == 'RestElement') {
+                    throw new SyntaxError(this.unexpectedNodeErrorMessage(pattern, 'A rest element in a parameter list cannot have a trailing comma'));
                 }
             } else {
                 break;
@@ -854,7 +859,12 @@ export class Parser {
             case tt.Await:
                 return this.parseAwaitExpression();
             case tt.Async: {
-                if (this.match(tt.Do, 1)) {
+                const nextToken = this.peekToken(1);
+                if (nextToken.type == tt.LeftParenthesis) {
+                    this.getNextToken(tt.Async);
+                    const params = this.parseFunctionParams();
+                    return this.parseArrowFunctionExpression(params);
+                } else if (nextToken.type == tt.Do) {
                     return this.parseDoExpression(true);
                 } else {
                     return this.parseFunction(false) as t.FunctionExpression;
@@ -897,7 +907,9 @@ export class Parser {
      * @returns The pattern node.
      */
     private parsePattern(canBeAssignment: boolean = true): t.Pattern {
-        const expression = this.parseExpression({ canBeSequence: false, canBeAssignment });
+        const expression = this.match(tt.Ellipsis)
+            ? this.parseSpreadElement()
+            : this.parseExpression({ canBeSequence: false, canBeAssignment });
         return this.expressionToPattern(expression);
     }
 
