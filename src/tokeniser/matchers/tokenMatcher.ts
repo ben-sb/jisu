@@ -414,6 +414,12 @@ const matchEqualTokens = (input: string): TokenMatchResult => {
                     token: new PartialToken(tt.Equality, '==')
                 };
             }
+        } else if (nextChar == '>') {
+            return {
+                matched: true,
+                length: 2,
+                token: new PartialToken(tt.Arrow, '=>')
+            };
         } else {
             return {
                 matched: true,

@@ -22,17 +22,20 @@ export function program(body: Statement[]): Program {
     };
 }
 
-type OmitType<T> = T extends Node ? Omit<T, 'type'> : never;
-
 // expressions
 export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | StringLiteral | NullLiteral | TemplateLiteral
+
     | AssignmentExpression | UnaryExpression | UpdateExpression 
     | BinaryExpression | LogicalExpression | SequenceExpression
-    | MemberExpression | CallExpression | NewExpression 
-    | ConditionalExpression | ThisExpression | SuperExpression 
-    | YieldExpression | AwaitExpression | FunctionExpression 
-    | ArrayExpression | ObjectExpression | DoExpression;
+    | MemberExpression 
+    | CallExpression | NewExpression 
+    | ConditionalExpression 
+    | ThisExpression | SuperExpression 
+    | YieldExpression | AwaitExpression 
+    | FunctionExpression | ArrowFunctionExpression
+    | ArrayExpression | ObjectExpression 
+    | DoExpression;
 
 export type Identifier = Node & {
     type: 'Identifier';
@@ -291,7 +294,7 @@ export function callExpression(
     };
 }
 
-export type NewExpression = OmitType<CallExpression> & {
+export type NewExpression = Omit<CallExpression, 'type'> & {
     type: 'NewExpression'
 }
 export function newExpression(
@@ -324,7 +327,7 @@ export function conditionalExpression(
     };
 }
 
-export type FunctionExpression = OmitType<Function> & {
+export type FunctionExpression = Omit<Function, 'type'> & {
     type: 'FunctionExpression';
 }
 export function functionExpression(
@@ -340,6 +343,25 @@ export function functionExpression(
         params,
         body,
         generator,
+        async
+    };
+}
+
+export type ArrowFunctionExpression = Omit<Function, 'type' | 'body'> & {
+    type: 'ArrowFunctionExpression';
+    body: BlockStatement | Expression;
+}
+export function arrowFunctionExpression(
+    params: Pattern[],
+    body: BlockStatement | Expression,
+    async: boolean = false
+): ArrowFunctionExpression {
+    return {
+        type: 'ArrowFunctionExpression',
+        id: null,
+        params,
+        body,
+        generator: false,
         async
     };
 }
@@ -360,7 +382,7 @@ export type ObjectMember = Node & {
     key: Expression;
     computed: boolean;
 }
-export type ObjectProperty = OmitType<ObjectMember> & {
+export type ObjectProperty = Omit<ObjectMember, 'type'> & {
     type: 'ObjectProperty';
     value: Expression;
     shorthand: boolean;
@@ -375,7 +397,7 @@ export function objectProperty(key: Expression, value: Expression, computed: boo
     };
 }
 
-export type ObjectMethod = OmitType<Function> & OmitType<ObjectMember> & {
+export type ObjectMethod = Omit<Function, 'type'> & Omit<ObjectMember, 'type'> & {
     type: 'ObjectMethod';
     kind: 'get' | 'set' | 'method';
 }
@@ -771,7 +793,7 @@ export type Function = Node & {
     async: boolean;
 }
 
-export type FunctionDeclaration = OmitType<Function> & {
+export type FunctionDeclaration = Omit<Function, 'type'> & {
     type: 'FunctionDeclaration';
     id: Identifier;
 }

@@ -27,7 +27,7 @@ type TokenTypes = { [name in TokenTypeKey]: TokenType };
 
 type TokenTypeKey = 'EOF' | 'Identifier' | 'Number' | 'String' | 'TemplateString' 
     | 'LeftBrace' | 'RightBrace' | 'Question' | 'Colon' | 'SemiColon' 
-    | 'Increment' | 'Decrement' | 'Ellipsis' 
+    | 'Increment' | 'Decrement' | 'Ellipsis' | 'Arrow'
     | 'Async' | 'Await' | 'Break' | 'Case'
     | 'Catch' | 'Const' | 'Continue' | 'Debugger' | 'Default' | 'Delete'
     | 'Do' | 'Else' | 'False' | 'Finally' | 'For' | 'Function' | 'If'
@@ -62,6 +62,7 @@ export const tt: TokenTypes = {
     Increment: new TokenType('++'),
     Decrement: new TokenType('--'),
     Ellipsis: new TokenType('...'),
+    Arrow: new TokenType('=>'),
 
     // keywords
     Async: new TokenType('async', { isKeyword: true }),

@@ -198,10 +198,11 @@ export class Parser {
     /**
      * Returns whether the next token is of a given type.
      * @param type The token type.
+     * @param offset The offset from the current position (defaults to 0).
      * @returns Whether.
      */
-    private match(type: TokenType): boolean {
-        return this.peekToken().type == type;
+    private match(type: TokenType, offset: number = 0): boolean {
+        return this.peekToken(offset).type == type;
     }
 
     /**
@@ -294,7 +295,7 @@ export class Parser {
             case tt.SemiColon:
                 return this.parseEmptyStatement();
             case tt.Identifier: {
-                if (this.peekToken(1).type == tt.Colon) {
+                if (this.match(tt.Colon, 1)) {
                     return this.parseLabeledStatement();
                 } else {
                     return this.parseExpressionStatement();
@@ -785,6 +786,8 @@ export class Parser {
             return this.parseCallExpression(expression);
         } else if (nextToken.type == tt.Question) {
             return this.parseConditionalExpression(expression);
+        } else if (nextToken.type == tt.Arrow) {
+            return this.parseArrowFunctionExpression([this.expressionToPattern(expression)]);
         }
         
         if (canBeGrouped && (binaryOperatorTokens.has(nextToken.type) || logicalOperatorTokens.has(nextToken.type))) {
@@ -828,8 +831,15 @@ export class Parser {
                 return this.parseSuperExpression();
             case tt.New:
                 return this.parseNewExpression();
-            case tt.LeftParenthesis:
-                return this.parseParenthesisedExpression();
+            case tt.LeftParenthesis: {
+                if (this.match(tt.RightParenthesis, 1)) {
+                    this.getNextToken(tt.LeftParenthesis);
+                    this.getNextToken(tt.RightParenthesis);
+                    return this.parseArrowFunctionExpression([]);
+                } else {
+                    return this.parseParenthesisedExpression();
+                }
+            }
             case tt.Function:
                 return this.parseFunction(false) as t.FunctionExpression;
             case tt.LeftBracket:
@@ -841,7 +851,7 @@ export class Parser {
             case tt.Await:
                 return this.parseAwaitExpression();
             case tt.Async: {
-                if (this.peekToken(1).type == tt.Do) {
+                if (this.match(tt.Do, 1)) {
                     return this.parseDoExpression(true);
                 } else {
                     return this.parseFunction(false) as t.FunctionExpression;
@@ -1349,6 +1359,23 @@ export class Parser {
         const argument = this.parseExpression();
 
         return this.finishNode(t.awaitExpression(argument));
+    }
+
+    /**
+     * Parses an arrow function expression.
+     * @param params The parameters of the function expression.
+     * @param async Whether it is async.
+     * @returns The arrow function expression node.
+     */
+    private parseArrowFunctionExpression(params: t.Pattern[], async: boolean = false): t.ArrowFunctionExpression {
+        this.startNode();
+        this.getNextToken(tt.Arrow);
+
+        const body = this.match(tt.LeftBrace)
+            ? this.parseBlockStatement()
+            : this.parseExpression();
+
+        return this.finishNode(t.arrowFunctionExpression(params, body, async));
     }
 
     /**
