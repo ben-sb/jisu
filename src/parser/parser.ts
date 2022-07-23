@@ -770,6 +770,8 @@ export class Parser {
      * (defaults to true).
      * @param canBeCall Whether it can be a call expression (defaults to
      * true).
+     * @param canBeMember Whether it can be a member expression (defaults to
+     * true).
      * @returns The expression node.
      */
     private parseExpression2({ 
