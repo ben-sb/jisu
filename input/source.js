@@ -1,3 +1,1 @@
-var a = async (a, ...b) => {
-    return 20;
-};
+var a = [20];
