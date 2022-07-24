@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>JavaScript Parser</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <script src="./js/parser.js"></script>
+    <link rel="stylesheet" href="./css/styles.css" />
+
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header>
+        <div class="flex-container">
+          <div class="left">
+            <h1 class="heading">JavaScript Parser</h1>
+            <h2>
+              Check the project out on GitHub :)
+            </h2>
+          </div>
+
+          <div class="right">
+            <a href="https://github.com/ben-sb/js-parser">
+              <img
+                src="./images/github-logo.png"
+                alt="GitHub Logo"
+                draggable="false"
+              />
+            </a>
+          </div>
+        </div>
+      </header>
+
+      <!-- Input & Output -->
+      <section id="main">
+        <div class="flex-container">
+          <div class="left">
+            <h3 class="textarea-heading">Input</h3>
+            <textarea id="input" placeholder="Enter Your JavaScript"></textarea>
+            <button class="textarea-button" id="parseButton">
+              Parse
+            </button>
+          </div>
+
+          <div class="right">
+            <h3 class="textarea-heading">Output</h3>
+            <textarea disabled id="output"></textarea>
+            <div class="tooltip">
+              <button class="textarea-button" id="copyButton">
+                Copy
+                <span class="tooltiptext" id="tooltip"
+                  >Copied to Clipboard</span
+                >
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Configurations -->
+      <section id="configurations">
+
+        <div class="flex-container">
+          <!-- Arrays -->
+          <div class="flex-item">
+            <span class="heading">Options</span>
+
+            <div class="checkbox-container">
+              <label class="b-contain">
+                <span>Include Locations</span>
+                <input type="checkbox" id="includeLocations" />
+                <div class="b-input"></div>
+              </label>
+
+              <label class="b-contain">
+                <span>Emit Logs</span>
+                <input type="checkbox" id="emitLogs" />
+                <div class="b-input"></div>
+              </label>
+            </div>
+          </div>
+
+      </section>
+    </div>
+
+    <script>
+        const inputTextArea = document.getElementById('input');
+        const outputTextArea = document.getElementById('output');
+        const copyButton = document.getElementById('copyButton');
+        const parseButton = document.getElementById('parseButton');
+        const tooltip = document.getElementById('tooltip');
+
+        function parse() {
+            const originalError = console.error;
+            let logs = '';
+            console.error = function(message) {
+                logs += message;
+            };
+
+            const source = inputTextArea.value;
+            try {
+                const ast = parser.parse(source, getConfig());
+                outputTextArea.value = JSON.stringify(ast, null, 2);
+                outputTextArea.style.color = 'black';
+            } catch (err) {
+                console.log(logs);
+                const message = logs ? logs + err.message : err.message;
+                outputTextArea.value = message;
+                outputTextArea.style.color = '#fc3838';
+            } finally {
+                console.error = originalError;
+            }
+        }
+
+        function getConfig() {
+            return {
+                omitLocations: !document.getElementById('includeLocations').checked,
+                emitLogs: document.getElementById('emitLogs').checked
+            };
+        }
+
+        parseButton.addEventListener('click', parse);
+
+        copyButton.addEventListener('click', function() {
+            copyToClipboard(outputTextArea.value);
+
+            tooltip.style.visibility = 'visible';
+            tooltip.style.opacity = '1';
+
+            copyButton.addEventListener('mouseout', function() {
+                tooltip.style.visibility = 'hidden';
+                tooltip.style.opacity = '0';
+            });
+        });
+
+        function copyToClipboard(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            document.execCommand('copy');
+            document.body.removeChild(textArea);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const placeholder = `const { a, ...b } = { a: 10, b: 20, c: 30 };`;
+            input.value = placeholder;
+            parse();
+        });
+    </script>
+  </body>
+</html>
