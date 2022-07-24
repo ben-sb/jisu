@@ -523,7 +523,8 @@ export function spreadElement(argument: Expression): SpreadElement {
 
 // statements
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
-    | VariableDeclaration | IfStatement | SwitchStatement | ForStatement 
+    | VariableDeclaration | IfStatement | SwitchStatement
+    | ForStatement | ForInStatement | ForOfStatement
     | WhileStatement | DoWhileStatement | TryStatement | WithStatement 
     | DebuggerStatement | LabeledStatement | ReturnStatement | BreakStatement 
     | ContinueStatement | FunctionDeclaration;
@@ -662,6 +663,44 @@ export function forStatement(
         test: test || null,
         update: update || null,
         body
+    };
+}
+
+export type ForInStatement = Node & {
+    type: 'ForInStatement';
+    left: VariableDeclaration | Expression;
+    right: Expression;
+    body: Statement;
+}
+export function forInStatement(
+    left: VariableDeclaration | Expression,
+    right: Expression,
+    body: Statement
+): ForInStatement {
+    return {
+        type: 'ForInStatement',
+        left,
+        right,
+        body
+    };
+}
+
+export type ForOfStatement = Omit<ForInStatement, 'type'> & {
+    type: 'ForOfStatement';
+    await: boolean;
+}
+export function forOfStatement(
+    left: VariableDeclaration | Expression,
+    right: Expression,
+    body: Statement,
+    await?: boolean
+): ForOfStatement {
+    return {
+        type: 'ForOfStatement',
+        left,
+        right,
+        body,
+        await: await || false
     };
 }
 

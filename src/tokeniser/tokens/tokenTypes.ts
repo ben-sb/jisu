@@ -31,7 +31,7 @@ type TokenTypeKey = 'EOF' | 'Identifier' | 'Number' | 'String' | 'TemplateString
     | 'Async' | 'Await' | 'Break' | 'Case'
     | 'Catch' | 'Const' | 'Continue' | 'Debugger' | 'Default' | 'Delete'
     | 'Do' | 'Else' | 'False' | 'Finally' | 'For' | 'Function' | 'If'
-    | 'Let' | 'New' | 'Null' | 'Return' | 'Super' | 'Switch' | 'This' 
+    | 'Let' | 'New' | 'Null' | 'Of' | 'Return' | 'Super' | 'Switch' | 'This' 
     | 'Throw' | 'True'| 'Try' | 'Typeof' | 'Var' | 'Void' | 'While' | 'With' 
     | 'Yield' 
     | 'Comma' | 'Assignment' | 'AddAssignment' | 'SubtractAssignment'
@@ -85,6 +85,7 @@ export const tt: TokenTypes = {
     Let: new TokenType('let', { isKeyword: true }),
     New: new TokenType('new', { isKeyword: true }),
     Null: new TokenType('null', { isKeyword: true }),
+    Of: new TokenType('of', { isKeyword: true }),
     Return: new TokenType('return', { isKeyword: true }),
     Super: new TokenType('super', { isKeyword: true }),
     Switch: new TokenType('switch', { isKeyword: true }),
