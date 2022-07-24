@@ -328,8 +328,19 @@ export class Parser {
         const kindToken = this.getNextToken(variableDeclarationKindTokens);
 
         const declarators = [];
+        let expectBreak = true;
         while (true) {
-            declarators.push(this.parseVariableDeclarator());
+            const [declarator, inOf] = this.parseVariableDeclarator();
+            declarators.push(declarator);
+
+            // must be within a for in/of statement
+            if (inOf) {
+                if (declarators.length > 1) {
+                    throw new SyntaxError('Only a single variable declaration is allowed in a for in/of statement');
+                }
+                expectBreak = false;
+                break;
+            }
 
             if (this.match(tt.Comma)) {
                 this.advance();
@@ -338,25 +349,31 @@ export class Parser {
             }
         }
 
-        this.expectBreak();
+        if (expectBreak) {
+            this.expectBreak();
+        }
+        
         return this.finishNode(t.variableDeclaration(kindToken.value, declarators));
     }
 
     /**
      * Parses a variable declarator.
-     * @returns The variable declarator node.
+     * @returns The variable declarator node and whether an in or of
+     * token was seen after the declarator.
      */
-    private parseVariableDeclarator(): t.VariableDeclarator {
+    private parseVariableDeclarator(): [t.VariableDeclarator, boolean] {
         this.startNode();
-        const pattern = this.parsePattern(false);
+        const pattern = this.parsePattern(false, false);
 
         let expression: t.Expression | undefined;
-        if (!this.match(tt.Comma)) {
+        if (!this.match(tt.Comma) && !this.match(tt.In) && !this.match(tt.Of)) {
             this.getNextToken(tt.Assignment);
             expression = this.parseExpression({ canBeSequence: false });
         }
 
-        return this.finishNode(t.variableDeclarator(pattern, expression));
+        const node = t.variableDeclarator(pattern, expression);
+        const inOf = this.match(tt.In) || this.match(tt.Of);
+        return [this.finishNode(node), inOf];
     }
 
     /**
@@ -522,11 +539,19 @@ export class Parser {
      * Parses a for statement.
      * @returns The for statement node.
      */
-    private parseForStatement(): t.ForStatement {
+    private parseForStatement(): t.ForStatement | t.ForInStatement | t.ForOfStatement {
         this.startNode();
         this.getNextToken(tt.For);
+
+        let isAwaitOf = false;
+        if (this.match(tt.Await)) {
+            isAwaitOf = true;
+            this.advance();
+        }
+
         this.getNextToken(tt.LeftParenthesis);
 
+        const initToken = this.peekToken();
         let init: t.VariableDeclaration | t.Expression | null;
         if (this.match(tt.SemiColon)) {
             init = null;
@@ -537,9 +562,29 @@ export class Parser {
             init = this.parseExpression();
             this.expectSemiColon();
         }
+
+        if (isAwaitOf && !this.match(tt.Of)) {
+            throw new SyntaxError(this.unexpectedTokenErrorMessage(this.peekToken(), tt.Of));
+        }
         
         let test: t.Expression | null;
-        if (this.match(tt.SemiColon)) {
+        if (this.match(tt.In) || this.match(tt.Of)) {
+            if (!init) {
+                throw new SyntaxError(this.unexpectedTokenErrorMessage(initToken, tt.Var));
+            }
+
+            let isIn = this.match(tt.In);
+            this.advance();
+
+            const right = this.parseExpression();
+            this.getNextToken(tt.RightParenthesis);
+            const body = this.parseStatement();
+            if (isIn) {
+                return this.finishNode(t.forInStatement(init, right, body));
+            } else {
+                return this.finishNode(t.forOfStatement(init, right, body, isAwaitOf));
+            }
+        } else if (this.match(tt.SemiColon)) {
             test = null;
         } else {
             test = this.parseExpression();
@@ -933,10 +978,10 @@ export class Parser {
      * (defaults to true).
      * @returns The pattern node.
      */
-    private parsePattern(canBeAssignment: boolean = true): t.Pattern {
+    private parsePattern(canBeGrouped: boolean = true, canBeAssignment: boolean = true): t.Pattern {
         const expression = this.match(tt.Ellipsis)
             ? this.parseSpreadElement()
-            : this.parseExpression({ canBeSequence: false, canBeAssignment });
+            : this.parseExpression({ canBeGrouped, canBeSequence: false, canBeAssignment });
         return this.expressionToPattern(expression);
     }
 

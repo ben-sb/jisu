@@ -726,6 +726,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['i', [keywordMatcher(tt.If, 'if'), keywordMatcher(tt.InstanceOf, 'instanceof'), keywordMatcher(tt.In, 'in')]],
     ['l', [keywordMatcher(tt.Let, 'let')]],
     ['n', [keywordMatcher(tt.New, 'new'), keywordMatcher(tt.Null, 'null')]],
+    ['o', [keywordMatcher(tt.Of, 'of')]],
     ['r', [keywordMatcher(tt.Return, 'return')]],
     ['s', [keywordMatcher(tt.Super, 'super'), keywordMatcher(tt.Switch, 'switch')]],
     ['t', [keywordMatcher(tt.This, 'this'), keywordMatcher(tt.Throw, 'throw'), keywordMatcher(tt.True, 'true'), keywordMatcher(tt.Try, 'try'), keywordMatcher(tt.Typeof, 'typeof')]],
