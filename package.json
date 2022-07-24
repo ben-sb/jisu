@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "start": "tsc -p tsconfig-build.json && TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/test.js",
-    "test": "jest --silent tests"
+    "test": "jest --silent"
   },
   "author": "",
   "license": "ISC",

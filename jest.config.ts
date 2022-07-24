@@ -2,6 +2,7 @@ const { compilerOptions } = require('./tsconfig-build');
 const { pathsToModuleNameMapper } = require('ts-jest');
 
 export default {
+    roots: ["<rootDir>/tests"],
     collectCoverage: true,
     collectCoverageFrom: [
         "src/tokeniser/**/*",
@@ -10,5 +11,5 @@ export default {
     coverageDirectory: "coverage",
     coverageProvider: "v8",
     moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, { prefix: '<rootDir>' }),
-    preset: "ts-jest",
+    preset: "ts-jest"
 };

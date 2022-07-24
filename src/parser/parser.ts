@@ -27,7 +27,7 @@ export class Parser {
     }
 
     /**
-     * Parses the tokens and returns the outer program node.
+     * Parses an entire program.
      * @returns The program node.
      */
     parse(): t.Program {
@@ -45,6 +45,19 @@ export class Parser {
         }
 
         return program;
+    }
+
+    /**
+     * Parses an expression only. Throws an error if there are tokens
+     * left after parsing.
+     * @returns The expression node.
+     */
+    parseExpressionOnly(): t.Expression {
+        const expression = this.parseExpression();
+        if (this.position < this.tokens.length && !this.match(tt.EOF)) {
+            throw new SyntaxError(this.unexpectedTokenErrorMessage(this.peekToken()));
+        }
+        return expression;
     }
 
     /**
