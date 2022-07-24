@@ -2,7 +2,7 @@
 
 A work in progress JavaScript tokeniser and parser. Currently only supports a subset of the JavaScript language and is not ECMAScript compliant.
 
-An online demo at https://ben-sb.github.io/jisu
+An online demo is available at https://ben-sb.github.io/jisu
 
 ## About
 JISU is a recursive descent parser (*roughly*). I say roughly as it uses the [precedence climbing method](https://en.wikipedia.org/wiki/Operator-precedence_parser) to parse binary and logical expressions.
