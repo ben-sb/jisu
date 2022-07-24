@@ -2,7 +2,7 @@
 
 A work in progress JavaScript tokeniser and parser. Currently only supports a subset of the JavaScript language and is not ECMAScript compliant.
 
-Online version [here](https://ben-sb.github.io/jisu)
+An online demo is available [here](https://ben-sb.github.io/jisu)
 
 ## Specs
 The repo has two exports:
