@@ -576,16 +576,16 @@ export type VariableDeclarationKind = 'var' | 'const' | 'let';
 export type VariableDeclaration = Node & {
     type: 'VariableDeclaration'
     kind: VariableDeclarationKind;
-    declarators: VariableDeclarator[];
+    declarations: VariableDeclarator[];
 }
 export function variableDeclaration(
     kind: VariableDeclarationKind, 
-    declarators: VariableDeclarator[]
+    declarations: VariableDeclarator[]
 ): VariableDeclaration {
     return {
         type: 'VariableDeclaration',
         kind,
-        declarators
+        declarations
     };
 }
 

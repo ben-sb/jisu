@@ -1,5 +1,21 @@
-/* This extends tsconfig-build.json and adds IDE typings to the tests */
 {
-  "extends": "./tsconfig-build.json",
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/**/*", "tests/**/*"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "commonjs",
+    "baseUrl": "./",
+    "paths": {
+      "@parser/*": ["src/parser/*"],
+      "@ast/*": ["src/parser/ast/*"],
+      "@tokeniser/*": ["src/tokeniser/*"],
+      "@tokens/*": ["src/tokeniser/tokens/*"],
+      "@matchers/*": ["src/tokeniser/matchers/*"]
+    },
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true                                 
+  }
 }

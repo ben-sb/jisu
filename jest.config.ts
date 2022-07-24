@@ -1,4 +1,4 @@
-const { compilerOptions } = require('./tsconfig-build');
+const { compilerOptions } = require('./tsconfig');
 const { pathsToModuleNameMapper } = require('ts-jest');
 
 export default {
