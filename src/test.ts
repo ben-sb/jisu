@@ -2,7 +2,9 @@ import fs from 'fs';
 import { parse } from 'src';
 
 const input = fs.readFileSync('input/source.js').toString();
-const ast = parse(input);
+const ast = parse(input, {
+    omitLocations: true,
+    emitLogs: false
+});
 
-console.log(ast);
-// console.log(JSON.stringify(ast, (key, value) => key != 'extra' ? value : undefined, 4));
+console.log(JSON.stringify(ast, null, 4));
