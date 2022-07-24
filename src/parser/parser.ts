@@ -350,9 +350,11 @@ export class Parser {
         this.startNode();
         const pattern = this.parsePattern(false);
 
-        this.getNextToken(tt.Assignment);
-        
-        const expression = this.parseExpression({ canBeSequence: false });
+        let expression: t.Expression | undefined;
+        if (!this.match(tt.Comma)) {
+            this.getNextToken(tt.Assignment);
+            expression = this.parseExpression({ canBeSequence: false });
+        }
 
         return this.finishNode(t.variableDeclarator(pattern, expression));
     }

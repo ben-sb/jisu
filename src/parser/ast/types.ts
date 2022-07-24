@@ -562,13 +562,16 @@ export function expressionStatement(expression: Expression): ExpressionStatement
 export type VariableDeclarator = Node & {
     type: 'VariableDeclarator';
     id: Pattern;
-    init: Expression;
+    init: Expression | null;
 }
-export function variableDeclarator(id: Pattern, init: Expression): VariableDeclarator {
+export function variableDeclarator(
+    id: Pattern, 
+    init: Expression | null | undefined
+): VariableDeclarator {
     return {
         type: 'VariableDeclarator',
         id,
-        init
+        init: init || null
     };
 }
 
