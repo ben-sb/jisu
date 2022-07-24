@@ -71,15 +71,15 @@
             <span class="heading">Options</span>
 
             <div class="checkbox-container">
-              <label class="b-contain">
-                <span>Include Locations</span>
-                <input type="checkbox" id="includeLocations" />
+                <label class="b-contain">
+                <span>Emit logs to console</span>
+                <input type="checkbox" id="emitLogs" />
                 <div class="b-input"></div>
               </label>
 
               <label class="b-contain">
-                <span>Emit Logs</span>
-                <input type="checkbox" id="emitLogs" />
+                <span>Include node metadata</span>
+                <input type="checkbox" id="includeMetadata" />
                 <div class="b-input"></div>
               </label>
             </div>
@@ -104,8 +104,15 @@
 
             const source = inputTextArea.value;
             try {
-                const ast = parser.parse(source, getConfig());
-                outputTextArea.value = JSON.stringify(ast, null, 2);
+                const config = getConfig();
+                const reducer = document.getElementById('includeMetadata').checked
+                    ? null
+                    : function(key, value) {
+                        return key != 'extra' ? value : undefined;
+                    };
+
+                const ast = parser.parse(source, config);
+                outputTextArea.value = JSON.stringify(ast, reducer, 2);
                 outputTextArea.style.color = 'black';
             } catch (err) {
                 console.log(logs);
@@ -119,7 +126,7 @@
 
         function getConfig() {
             return {
-                omitLocations: !document.getElementById('includeLocations').checked,
+                omitLocations: false,
                 emitLogs: document.getElementById('emitLogs').checked
             };
         }

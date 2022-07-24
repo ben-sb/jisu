@@ -1,13 +1,13 @@
 {
   "name": "jisu",
   "version": "1.0.0",
-  "description": "",
+  "description": "Work in progress JavaScript parser",
   "main": "dist/index.js",
   "scripts": {
     "start": "tsc -p tsconfig-build.json && TS_NODE_BASEURL=./dist node -r tsconfig-paths/register dist/test.js",
     "test": "jest --silent"
   },
-  "author": "",
+  "author": "ben-sb",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^28.1.6",
