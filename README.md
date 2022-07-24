@@ -2,7 +2,7 @@
 
 A work in progress JavaScript tokeniser and parser. Currently only supports a subset of the JavaScript language and is not ECMAScript compliant.
 
-An online demo is available [here](https://ben-sb.github.io/jisu)
+An online demo at [https://ben-sb.github.io/jisu]
 
 ## Specs
 The repo has two exports:
@@ -16,7 +16,6 @@ interface ParserOptions {
     omitLocations?: boolean;
 }
 ```
-
 
 I'm a big fan of [Babel](https://github.com/babel/babel) and as a result the format of the AST JISU produces is extremely similar to Babel's. As a result @babel/generator can be used on the AST (as seen in *src/demo.ts*). I also took inspiration from the @babel/types package and implemented a similar system in *src/parser/ast*.
 
