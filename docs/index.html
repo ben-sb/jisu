@@ -155,7 +155,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const placeholder = `const { a, ...b } = { a: 10, b: 20, c: 30 };`;
+            const placeholder = `const [a, ...b] = [1, 2, 3];`;
             input.value = placeholder;
             parse();
         });
