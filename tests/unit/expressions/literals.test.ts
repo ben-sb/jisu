@@ -1,32 +1,32 @@
-import { parseExpression } from '../../src';
+import { parseExpr } from './common';
 
 describe('identifiers', () => {
     test('single character', () => {
-        const ast = parseExpression('a');
-        expect(ast).toMatchObject({"type":"Identifier","name":"a"});
+        const ast = parseExpr('a');
+        expect(ast).toEqual({"type":"Identifier","name":"a"});
     });
     test('multiple characters', () => {
-        const ast = parseExpression('abc');
-        expect(ast).toMatchObject({"type":"Identifier","name":"abc"});
+        const ast = parseExpr('abc');
+        expect(ast).toEqual({"type":"Identifier","name":"abc"});
     });
     test('characters and numbers', () => {
-        const ast = parseExpression('abc123');
-        expect(ast).toMatchObject({"type":"Identifier","name":"abc123"});
+        const ast = parseExpr('abc123');
+        expect(ast).toEqual({"type":"Identifier","name":"abc123"});
     });
     test('starting with underscore', () => {
-        const ast = parseExpression('_abc');
-        expect(ast).toMatchObject({"type":"Identifier","name":"_abc"});
+        const ast = parseExpr('_abc');
+        expect(ast).toEqual({"type":"Identifier","name":"_abc"});
     });
     test('starting with dollar sign', () => {
-        const ast = parseExpression('$abc');
-        expect(ast).toMatchObject({"type":"Identifier","name":"$abc"});
+        const ast = parseExpr('$abc');
+        expect(ast).toEqual({"type":"Identifier","name":"$abc"});
     });
     test('starting with number throws unexpected token error', () => {
-        expect(() => parseExpression('1abc'))
+        expect(() => parseExpr('1abc'))
             .toThrow('Unexpected token abc');
     });
     test('containing invalid character throws unable to match error', () => {
-        expect(() => parseExpression('ab£c'))
+        expect(() => parseExpr('ab£c'))
             .toThrow('Unable to match input £c');
         // TODO: give proper parser error messages here
     });
@@ -34,67 +34,67 @@ describe('identifiers', () => {
 
 describe('literal numeric expressions', () => {
     test('number', () => {
-        const ast = parseExpression('10');
-        expect(ast).toMatchObject({"type":"NumericLiteral","value":10});
+        const ast = parseExpr('10');
+        expect(ast).toEqual({"type":"NumericLiteral","value":10});
     });
     test('number followed by letter', () => {
-        expect(() => parseExpression('1c'))
+        expect(() => parseExpr('1c'))
             .toThrow('Unexpected token c');
     });
 });
 
 describe('literal boolean expressions', () => {
     test('true', () => {
-        const ast = parseExpression('true');
-        expect(ast).toMatchObject({"type":"BooleanLiteral","value":true});
+        const ast = parseExpr('true');
+        expect(ast).toEqual({"type":"BooleanLiteral","value":true});
     });
     test('false', () => {
-        const ast = parseExpression('false');
-        expect(ast).toMatchObject({"type":"BooleanLiteral","value":false});
+        const ast = parseExpr('false');
+        expect(ast).toEqual({"type":"BooleanLiteral","value":false});
     });
 });
 
 describe('string literal expressions', () => {
     test('single quotes', () => {
-        const ast = parseExpression(`'Hello World'`);
-        expect(ast).toMatchObject({"type":"StringLiteral","value":"Hello World"});
+        const ast = parseExpr(`'Hello World'`);
+        expect(ast).toEqual({"type":"StringLiteral","value":"Hello World"});
     });
     test('double quotes', () => {
-        const ast = parseExpression(`"Hello World"`);
-        expect(ast).toMatchObject({"type":"StringLiteral","value":"Hello World"});
+        const ast = parseExpr(`"Hello World"`);
+        expect(ast).toEqual({"type":"StringLiteral","value":"Hello World"});
     });
     test('multiline single quotes throws unable to match error', () => {
         expect(() => {
-            parseExpression(`'Hello\nWorld'`);
+            parseExpr(`'Hello\nWorld'`);
         })
         .toThrow(`Unable to match input 'Hello\nWorld'`);
         // TODO: give proper parser error messages here
     });
     test('multiline double quotes throws unable to match error', () => {
         expect(() => {
-            parseExpression(`"Hello\nWorld"`);
+            parseExpr(`"Hello\nWorld"`);
         })
         .toThrow(`Unable to match input "Hello\nWorld"`);
         // TODO: give proper parser error messages here
     });
     test('single quotes with escaped single quote', () => {
-        const ast = parseExpression(`'Hello\\'World'`);
-        expect(ast).toMatchObject({"type":"StringLiteral","value":"Hello\\'World"});
+        const ast = parseExpr(`'Hello\\'World'`);
+        expect(ast).toEqual({"type":"StringLiteral","value":"Hello\\'World"});
     });
     test('double quotes with escaped double quote', () => {
-        const ast = parseExpression(`'Hello\\"World'`);
-        expect(ast).toMatchObject({"type":"StringLiteral","value":`Hello\\"World`});
+        const ast = parseExpr(`'Hello\\"World'`);
+        expect(ast).toEqual({"type":"StringLiteral","value":`Hello\\"World`});
     });
     test('unterminated single quote throws unable to match error', () => {
         expect(() => {
-            parseExpression(`'Hello World`);
+            parseExpr(`'Hello World`);
         })
         .toThrow(`Unable to match input 'Hello World`);
         // TODO: give proper parser error messages here
     });
     test('unterminated double quote throws unable to match error', () => {
         expect(() => {
-            parseExpression(`"Hello World`);
+            parseExpr(`"Hello World`);
         })
         .toThrow(`Unable to match input "Hello World`);
         // TODO: give proper parser error messages here
@@ -103,27 +103,27 @@ describe('string literal expressions', () => {
 
 describe('null literals', () => {
     test('null', () => {
-        const ast = parseExpression('null');
-        expect(ast).toMatchObject({"type":"NullLiteral"});
+        const ast = parseExpr('null');
+        expect(ast).toEqual({"type":"NullLiteral"});
     });
 });
 
 describe('template literals', () => {
     test('single line', () => {
-        const ast = parseExpression('`Hello World`');
-        expect(ast).toMatchObject({"type":"TemplateLiteral","value":"Hello World"});
+        const ast = parseExpr('`Hello World`');
+        expect(ast).toEqual({"type":"TemplateLiteral","value":"Hello World"});
     });
     test('multiline', () => {
-        const ast = parseExpression('`Hello\nWorld`');
-        expect(ast).toMatchObject({"type":"TemplateLiteral","value":"Hello\nWorld"});
+        const ast = parseExpr('`Hello\nWorld`');
+        expect(ast).toEqual({"type":"TemplateLiteral","value":"Hello\nWorld"});
     });
     test('unterminated throws unable to match error', () => {
         try {
-            parseExpression('`Hello World')
+            parseExpr('`Hello World')
         } catch (e) {
             console.log(e);
         }
-        expect(() => parseExpression('`Hello World'))
+        expect(() => parseExpr('`Hello World'))
             .toThrow('Unable to match input `Hello World');
     });
     // TODO: add more tests once template literals are properly implemented
