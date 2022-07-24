@@ -1,7 +1,7 @@
-import { PartialToken, Token } from './tokens/token';
-import { matcherMap, MatchSuccess, OTHER_CHARS_KEY, TokenMatcher } from './matchers/tokenMatcher';
-import { tt } from './tokens/tokenTypes';
-import { SourcePosition } from './tokens/location';
+import { PartialToken, Token } from '@tokens/token';
+import { matcherMap, MatchSuccess, OTHER_CHARS_KEY, TokenMatcher } from '@matchers/tokenMatcher';
+import { tt } from '@tokens/tokenTypes';
+import { SourcePosition } from '@tokens/location';
 
 export class Tokeniser {
     private readonly tokens: Token[];

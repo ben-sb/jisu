@@ -1,5 +1,5 @@
-import { PartialToken } from '../tokens/token';
-import { TokenType, tt } from '../tokens/tokenTypes';
+import { PartialToken } from '@tokens/token';
+import { TokenType, tt } from '@tokens/tokenTypes';
 
 export interface MatchSuccess {
     matched: true;

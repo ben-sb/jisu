@@ -1,7 +1,7 @@
-import * as t from './ast/types';
-import { Token } from '../tokeniser/tokens/token';
-import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '../tokeniser/tokens/tokenTypes';
-import { SourceLocation, SourcePosition } from '../tokeniser/tokens/location';
+import * as t from '@ast/types';
+import { assignmentOperatorTokens, binaryOperatorTokens, booleanValueTokens, groupedOperatorTokens, logicalOperatorTokens, TokenType, tt, unaryOperatorTokens, updateOperatorTokens, variableDeclarationKindTokens } from '@tokens/tokenTypes';
+import { SourceLocation, SourcePosition } from '@tokens/location';
+import { Token } from '@tokeniser/tokens/token';
 
 export class Parser {
     private readonly input: string;

@@ -1,5 +1,5 @@
-import { SourceLocation } from './location';
-import { TokenType } from './tokenTypes';
+import { SourceLocation } from '@tokens/location';
+import { TokenType } from '@tokens/tokenTypes';
 
 export class Token {
     type: TokenType;

@@ -1,4 +1,4 @@
-import { SourceLocation } from '../../tokeniser/tokens/location';
+import { SourceLocation } from '@tokens/location';
 
 export interface Node {
     type: string;

@@ -1,6 +1,6 @@
-import * as t from '../../src/parser/ast/types';
-import { Parser } from '../../src/parser/parser';
-import { Tokeniser } from '../../src/tokeniser/tokeniser';
+import * as t from '@ast/types';
+import { Parser } from '@parser/parser';
+import { Tokeniser } from '@tokeniser/tokeniser';
 
 /**
  * Parses an expression. This should be converted when a parseExpression
