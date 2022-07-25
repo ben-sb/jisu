@@ -283,6 +283,8 @@ export class Parser {
             case tt.Function:
             case tt.Async:
                 return this.parseFunction(true) as t.FunctionDeclaration;
+            case tt.Class:
+                return this.parseClass(true) as t.ClassDeclaration;
             case tt.If:
                 return this.parseIfStatement();
             case tt.Switch:
@@ -443,6 +445,160 @@ export class Parser {
         this.getNextToken(tt.RightParenthesis);
 
         return params;
+    }
+
+    /**
+     * Parses a class declaration or expression.
+     * @param isDeclaration Whether it is a class declaration.
+     * @returns The class declaration or expression node.
+     */
+    private parseClass(isDeclaration: boolean): t.ClassDeclaration | t.ClassExpression {
+        this.startNode();
+        this.getNextToken(tt.Class);
+
+        const id = this.match(tt.Identifier)
+            ? this.parseIdentifier()
+            : null;
+        if (isDeclaration && !id) {
+            throw new SyntaxError('Class declarations require a name');
+        }
+
+        let superClass = null;
+        if (this.match(tt.Extends)) {
+            this.getNextToken(tt.Extends);
+            superClass = this.parseExpression();
+        }
+
+        const body = this.parseClassBody();
+
+        const node = isDeclaration
+            ? t.classDeclaration(id as t.Identifier, superClass, body)
+            : t.classExpression(id, superClass, body);
+        return this.finishNode(node);
+    }
+
+    /**
+     * Parses a class body.
+     * @returns The class body node.
+     */
+    private parseClassBody(): t.ClassBody {
+        this.startNode();
+        this.getNextToken(tt.LeftBrace);
+
+        const body = [];
+        while (!this.match(tt.RightBrace)) {
+            while (this.match(tt.SemiColon)) {
+                this.getNextToken(tt.SemiColon);
+            }
+
+            body.push(this.parseClassBodyElement());
+
+            while (this.match(tt.SemiColon)) {
+                this.getNextToken(tt.SemiColon);
+            }
+        }
+
+        this.getNextToken(tt.RightBrace);
+
+        return this.finishNode(t.classBody(body));
+    }
+
+    /**
+     * Parses an element within a class body. Grouped together as the 
+     * type can ambigious until the modifiers and key have been read.
+     * @returns The class body element node.
+     */
+    private parseClassBodyElement(): t.ClassMethod | t.ClassProperty | t.StaticBlock {
+        let isStatic = false;
+        let staticToken: Token | undefined;
+        let async = false;
+        let asyncToken: Token | undefined;
+        let generator = false;
+        let generatorToken: Token | undefined;
+        let computed = false;
+        let kind: t.ClassMethodKind = 'method';
+
+        if (this.match(tt.Static)) {
+            if (this.match(tt.LeftBrace, 1)) {
+                return this.parseStaticBlock();
+            }
+
+            staticToken = this.getNextToken(tt.Static);
+            isStatic = true;
+        }
+
+        if (this.match(tt.Async)) {
+            asyncToken = this.getNextToken(tt.Async);
+            async = true;
+        }
+
+        if (this.match(tt.Multiply)) {
+            generatorToken = this.getNextToken(tt.Multiply);
+            generator = true;
+        }
+
+        let key: t.Expression | undefined;
+        const nextToken = this.peekToken();
+        if (nextToken.value == 'get' || nextToken.value == 'set') {
+            this.advance();
+            kind = nextToken.value;
+        } else if (nextToken.value == 'constructor') {
+            key = this.parseIdentifier();
+            kind = nextToken.value;
+        }
+
+        if (!key) {
+            if (this.match(tt.LeftBracket)) {
+                this.getNextToken(tt.LeftBracket);
+                key = this.parseExpression();
+                this.getNextToken(tt.RightBracket);
+                computed = true;
+            } else {
+                key = this.parseExpression({ canBeAssignment: false });
+            }
+        }
+
+        if (this.match(tt.Assignment)) {
+            if (async) { // properties cannot have the async or generator modifiers
+                throw new SyntaxError(this.unexpectedTokenErrorMessage(asyncToken as Token));
+            } else if (generator) {
+                throw new SyntaxError(this.unexpectedTokenErrorMessage(generatorToken as Token));
+            }
+
+            this.getNextToken(tt.Assignment);
+            const value = this.parseExpression();
+            return this.finishNode(t.classProperty(key, value, computed, isStatic));
+        } else {
+            if (kind == 'constructor') { // constructor methods cannot have the static or async modifiers
+                if (isStatic) {
+                    throw new SyntaxError(this.unexpectedTokenErrorMessage(staticToken as Token));
+                } else if (async) {
+                    throw new SyntaxError(this.unexpectedTokenErrorMessage(asyncToken as Token));
+                }
+            }
+
+            const params = this.parseFunctionParams();
+            const body = this.parseBlockStatement();
+            return this.finishNode(t.classMethod(kind, key, params, body, computed, isStatic, generator, async));
+        }
+    }
+
+    /**
+     * Parses a static block.
+     * @returns The static block node.
+     */
+    private parseStaticBlock(): t.StaticBlock {
+        this.startNode();
+        this.getNextToken(tt.Static);
+        this.getNextToken(tt.LeftBrace);
+
+        const statements = [];
+        while (!this.match(tt.RightBrace)) {
+            statements.push(this.parseStatement());
+        }
+
+        this.getNextToken(tt.RightBrace);
+        return this.finishNode(t.staticBlock(statements));
     }
 
     /**
@@ -922,6 +1078,8 @@ export class Parser {
             }
             case tt.Function:
                 return this.parseFunction(false) as t.FunctionExpression;
+            case tt.Class:
+                return this.parseClass(false) as t.ClassExpression;
             case tt.LeftBracket:
                 return this.parseArrayExpression();
             case tt.LeftBrace:
