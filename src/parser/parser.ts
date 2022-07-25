@@ -537,7 +537,7 @@ export class Parser {
             generator = true;
         }
 
-        let key: t.Expression | undefined;
+        let key: t.Expression | t.PrivateName | undefined;
         const nextToken = this.peekToken();
         if (nextToken.value == 'get' || nextToken.value == 'set') {
             this.advance();
@@ -553,6 +553,12 @@ export class Parser {
                 key = this.parseExpression();
                 this.getNextToken(tt.RightBracket);
                 computed = true;
+            } else if (this.match(tt.Hash)) {
+                const hashToken = this.peekToken();
+                key = this.parsePrivateName();
+                if (key.type == 'PrivateName' && key.id.name == 'constructor') {
+                    throw new SyntaxError(this.unexpectedTokenErrorMessage(hashToken as Token));
+                }
             } else {
                 key = this.parseExpression({ canBeAssignment: false });
             }
@@ -1644,6 +1650,17 @@ export class Parser {
         const body = this.parseBlockStatement();
 
         return this.finishNode(t.doExpression(body, async));
+    }
+
+    /**
+     * Parses a private name.
+     * @returns The private name node.
+     */
+    private parsePrivateName(): t.PrivateName {
+        this.startNode();
+        this.getNextToken(tt.Hash);
+        const id = this.parseIdentifier();
+        return this.finishNode(t.privateName(id));
     }
 
     /**

@@ -536,6 +536,17 @@ export function spreadElement(argument: Expression): SpreadElement {
     };
 }
 
+export type PrivateName = Node & {
+    type: 'PrivateName';
+    id: Identifier;
+}
+export function privateName(id: Identifier): PrivateName {
+    return {
+        type: 'PrivateName',
+        id
+    };
+}
+
 // statements
 export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | SwitchStatement
@@ -911,14 +922,14 @@ export function classBody(
 export type ClassMethodKind = 'constructor' | 'method' | 'get' | 'set';
 export type ClassMethod = Omit<Function, 'type'> & {
     type: 'ClassMethod';
-    key: Expression;
+    key: Expression | PrivateName;
     kind: ClassMethodKind;
     computed: boolean;
     static: boolean;
 }
 export function classMethod(
     kind: ClassMethodKind,
-    key: Expression,
+    key: Expression | PrivateName,
     params: Pattern[],
     body: BlockStatement,
     computed: boolean = false,
@@ -942,13 +953,13 @@ export function classMethod(
 
 export type ClassProperty = Node & {
     type: 'ClassProperty';
-    key: Expression;
+    key: Expression | PrivateName;
     value: Expression;
     computed: boolean;
     static: boolean;
 }
 export function classProperty(
-    key: Expression,
+    key: Expression | PrivateName,
     value: Expression,
     computed: boolean = false,
     isStatic: boolean = false,

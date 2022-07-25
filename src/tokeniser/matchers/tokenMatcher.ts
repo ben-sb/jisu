@@ -757,6 +757,7 @@ export const matcherMap: Map<string | {}, TokenMatcher[]> = new Map([
     ['}', [characterMatcher(tt.RightBrace, '}')]],
     [':', [characterMatcher(tt.Colon, ':')]],
     [';', [characterMatcher(tt.SemiColon, ';')]],
+    ['#', [characterMatcher(tt.Hash, '#')]],
     ['.', [stringMatcher(tt.Ellipsis, '...'), characterMatcher(tt.Dot, '.')]],
 
     ["'", [matchSingleLineString]],
