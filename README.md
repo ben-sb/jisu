@@ -29,8 +29,9 @@ Unit tests can be run via ```npm test```<br/>
 Currently there are very few tests but I plan to add more.
 
 ## To Do
+* Support private names
+* Support private class methods and properties
 * Allow semi-keywords (e.g. await, async, of) to be treated as identifiers
-* Support classes and class based syntax (constructor, super etc.)
 * Support numbers expressed in hexadecimal, octal and scientific notation
 * Support regular expressions
 * Probably a lot more
