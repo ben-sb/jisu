@@ -33,7 +33,7 @@ export type Expression = Identifier | NumericLiteral | BooleanLiteral
     | ConditionalExpression 
     | ThisExpression | SuperExpression 
     | YieldExpression | AwaitExpression 
-    | FunctionExpression | ArrowFunctionExpression
+    | FunctionExpression | ArrowFunctionExpression | ClassExpression
     | ArrayExpression | ObjectExpression 
     | DoExpression;
 
@@ -366,6 +366,22 @@ export function arrowFunctionExpression(
     };
 }
 
+export type ClassExpression = Class & {
+    type: 'ClassExpression';
+}
+export function classExpression(
+    id: Identifier | null,
+    superClass: Expression | null,
+    body: ClassBody
+): ClassExpression {
+    return {
+        type: 'ClassExpression',
+        id,
+        superClass,
+        body
+    };
+}
+
 export type ArrayExpression = Node & {
     type: 'ArrayExpression';
     elements: (Expression | SpreadElement | null)[];
@@ -406,10 +422,9 @@ export function objectMethod(
     key: Expression,
     params: Pattern[],
     body: BlockStatement,
+    computed: boolean = false,
     generator: boolean = false,
     async: boolean = false,
-    computed: boolean = false
-
 ): ObjectMethod {
     return {
         type: 'ObjectMethod',
@@ -418,9 +433,9 @@ export function objectMethod(
         id: null,
         params,
         body,
+        computed,
         generator,
-        async,
-        computed
+        async
     };
 }
 
@@ -526,8 +541,9 @@ export type Statement = BlockStatement | ExpressionStatement | EmptyStatement
     | VariableDeclaration | IfStatement | SwitchStatement
     | ForStatement | ForInStatement | ForOfStatement
     | WhileStatement | DoWhileStatement | TryStatement | WithStatement 
-    | DebuggerStatement | LabeledStatement | ReturnStatement | BreakStatement 
-    | ContinueStatement | FunctionDeclaration;
+    | DebuggerStatement | LabeledStatement | ReturnStatement 
+    | BreakStatement | ContinueStatement 
+    | FunctionDeclaration | ClassDeclaration;
 
 export type BlockStatement = Node & {
     type: 'BlockStatement';
@@ -853,5 +869,106 @@ export function functionDeclaration(
         body,
         generator,
         async
+    };
+}
+
+export type ClassDeclaration = Class & {
+    type: 'ClassDeclaration';
+    id: Identifier;
+}
+export function classDeclaration(
+    id: Identifier,
+    superClass: Expression | null,
+    body: ClassBody
+): ClassDeclaration {
+    return {
+        type: 'ClassDeclaration',
+        id,
+        superClass,
+        body
+    };
+}
+
+export type Class = Node & {
+    id: Identifier | null;
+    superClass: Expression | null;
+    body: ClassBody;
+}
+
+export type ClassBody = Node & {
+    type: 'ClassBody';
+    body: (ClassMethod | ClassProperty | StaticBlock)[];
+}
+export function classBody(
+    body: (ClassMethod | ClassProperty | StaticBlock)[]
+): ClassBody {
+    return {
+        type: 'ClassBody',
+        body
+    };
+}
+
+export type ClassMethodKind = 'constructor' | 'method' | 'get' | 'set';
+export type ClassMethod = Omit<Function, 'type'> & {
+    type: 'ClassMethod';
+    key: Expression;
+    kind: ClassMethodKind;
+    computed: boolean;
+    static: boolean;
+}
+export function classMethod(
+    kind: ClassMethodKind,
+    key: Expression,
+    params: Pattern[],
+    body: BlockStatement,
+    computed: boolean = false,
+    isStatic: boolean = false,
+    generator: boolean = false,
+    async: boolean = false,
+): ClassMethod {
+    return {
+        type: 'ClassMethod',
+        kind,
+        key,
+        id: null,
+        params,
+        body,
+        computed,
+        static: isStatic,
+        generator,
+        async
+    };
+}
+
+export type ClassProperty = Node & {
+    type: 'ClassProperty';
+    key: Expression;
+    value: Expression;
+    computed: boolean;
+    static: boolean;
+}
+export function classProperty(
+    key: Expression,
+    value: Expression,
+    computed: boolean = false,
+    isStatic: boolean = false,
+): ClassProperty {
+    return {
+        type: 'ClassProperty',
+        key,
+        value,
+        computed,
+        static: isStatic
+    };
+}
+
+export type StaticBlock = Node & {
+    type: 'StaticBlock';
+    body: Statement[];
+}
+export function staticBlock(body: Statement[]): StaticBlock {
+    return {
+        type: 'StaticBlock',
+        body
     };
 }

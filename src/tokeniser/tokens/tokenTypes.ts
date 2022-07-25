@@ -29,11 +29,11 @@ type TokenTypeKey = 'EOF' | 'Identifier' | 'Number' | 'String' | 'TemplateString
     | 'LeftBrace' | 'RightBrace' | 'Question' | 'Colon' | 'SemiColon' 
     | 'Increment' | 'Decrement' | 'Ellipsis' | 'Arrow'
     | 'Async' | 'Await' | 'Break' | 'Case'
-    | 'Catch' | 'Const' | 'Continue' | 'Debugger' | 'Default' | 'Delete'
-    | 'Do' | 'Else' | 'False' | 'Finally' | 'For' | 'Function' | 'If'
-    | 'Let' | 'New' | 'Null' | 'Of' | 'Return' | 'Super' | 'Switch' | 'This' 
-    | 'Throw' | 'True'| 'Try' | 'Typeof' | 'Var' | 'Void' | 'While' | 'With' 
-    | 'Yield' 
+    | 'Catch' | 'Class' | 'Const' | 'Continue' | 'Debugger' | 'Default' 
+    | 'Delete' | 'Do' | 'Else' | 'Extends' | 'False' | 'Finally' | 'For' 
+    | 'Function' | 'If' | 'Let' | 'New' | 'Null' | 'Of' | 'Return' | 'Super' 
+    | 'Static' | 'Switch' | 'This' | 'Throw' | 'True'| 'Try' | 'Typeof' 
+    | 'Var' | 'Void' | 'While' | 'With' | 'Yield' 
     | 'Comma' | 'Assignment' | 'AddAssignment' | 'SubtractAssignment'
     | 'MultiplyAssignment' | 'DivideAssignment' | 'ModulusAssignment' 
     | 'ExponentialAssignment' | 'LeftShiftAssignment' | 'RightShiftAssignment'
@@ -70,6 +70,7 @@ export const tt: TokenTypes = {
     Break: new TokenType('break', { isKeyword: true }),
     Case: new TokenType('case', { isKeyword: true }),
     Catch: new TokenType('catch', { isKeyword: true }),
+    Class: new TokenType('class', { isKeyword: true }),
     Const: new TokenType('const', { isKeyword: true }),
     Continue: new TokenType('continue', { isKeyword: true }),
     Debugger: new TokenType('debugger', { isKeyword: true }),
@@ -77,6 +78,7 @@ export const tt: TokenTypes = {
     Delete: new TokenType('delete', { isKeyword: true }),
     Do: new TokenType('do', { isKeyword: true }),
     Else: new TokenType('else', { isKeyword: true }),
+    Extends: new TokenType('extends', { isKeyword: true }),
     False: new TokenType('false', { isKeyword: true }),
     Finally: new TokenType('finally', { isKeyword: true }),
     For: new TokenType('for', { isKeyword: true }),
@@ -87,6 +89,7 @@ export const tt: TokenTypes = {
     Null: new TokenType('null', { isKeyword: true }),
     Of: new TokenType('of', { isKeyword: true }),
     Return: new TokenType('return', { isKeyword: true }),
+    Static: new TokenType('static', { isKeyword: true }),
     Super: new TokenType('super', { isKeyword: true }),
     Switch: new TokenType('switch', { isKeyword: true }),
     This: new TokenType('this', { isKeyword: true }),
