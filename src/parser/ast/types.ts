@@ -908,15 +908,16 @@ export function classBody(
     };
 }
 
+export type ClassMethodKind = 'constructor' | 'method' | 'get' | 'set';
 export type ClassMethod = Omit<Function, 'type'> & {
     type: 'ClassMethod';
     key: Expression;
-    kind: 'constructor' | 'method' | 'get' | 'set';
+    kind: ClassMethodKind;
     computed: boolean;
     static: boolean;
 }
 export function classMethod(
-    kind: 'constructor' | 'method' | 'get' | 'set',
+    kind: ClassMethodKind,
     key: Expression,
     params: Pattern[],
     body: BlockStatement,
