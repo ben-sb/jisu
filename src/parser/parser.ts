@@ -523,8 +523,11 @@ export class Parser {
                 return this.parseStaticBlock();
             }
 
+            this.startNode();
             staticToken = this.getNextToken(tt.Static);
             isStatic = true;
+        } else {
+            this.startNode();
         }
 
         if (this.match(tt.Async)) {
