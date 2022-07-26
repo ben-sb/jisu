@@ -560,7 +560,7 @@ export class Parser {
                     throw new SyntaxError(this.unexpectedTokenErrorMessage(hashToken as Token));
                 }
             } else {
-                key = this.parseExpression({ canBeAssignment: false });
+                key = this.parseExpression({ canBeAssignment: false, canBeCall: false });
             }
         }
 
@@ -575,11 +575,13 @@ export class Parser {
             const value = this.parseExpression();
             return this.finishNode(t.classProperty(key, value, computed, isStatic));
         } else {
-            if (kind == 'constructor') { // constructor methods cannot have the static or async modifiers
-                if (isStatic) {
+            if (kind != 'method') { // validate modifiers for getter/setter/constructor
+                if (isStatic && kind == 'constructor') {
                     throw new SyntaxError(this.unexpectedTokenErrorMessage(staticToken as Token));
                 } else if (async) {
                     throw new SyntaxError(this.unexpectedTokenErrorMessage(asyncToken as Token));
+                } else if (generator) {
+                    throw new SyntaxError(this.unexpectedTokenErrorMessage(generatorToken as Token));
                 }
             }
 
@@ -1007,7 +1009,7 @@ export class Parser {
         let nextToken = this.peekToken();
 
         // these can repeat back to back and don't call parseExpression recursively so need to keep parsing
-        while ((canBeMember && (nextToken.type == tt.LeftBracket || nextToken.type == tt.Dot)) || nextToken.type == tt.LeftParenthesis) {
+        while ((canBeMember && (nextToken.type == tt.LeftBracket || nextToken.type == tt.Dot)) || (canBeCall && nextToken.type == tt.LeftParenthesis)) {
             if (nextToken.type == tt.LeftBracket) {
                 expression = this.parseMemberExpression(expression, true);
             } else if (nextToken.type == tt.Dot) {
