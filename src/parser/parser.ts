@@ -224,8 +224,7 @@ export class Parser {
     private expectBreak(): void {
         if (this.match(tt.SemiColon)) {
             this.advance();
-        }
-        else if (!this.match(tt.RightBrace) && !this.match(tt.EOF) && !this.isLineBreak()) {
+        } else if (!this.match(tt.RightBrace) && !this.match(tt.EOF) && !this.isLineBreak()) {
             throw new SyntaxError(this.unexpectedTokenErrorMessage(this.peekToken()));
         }
     }
