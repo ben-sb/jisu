@@ -2,6 +2,8 @@
 
 A work in progress JavaScript tokeniser and parser. Currently only supports a subset of the JavaScript language and is not ECMAScript compliant.
 
+Install via `npm install jisu`
+
 An online demo is available at https://ben-sb.github.io/jisu
 
 ## About

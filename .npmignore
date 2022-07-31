@@ -1,0 +1,9 @@
+input
+coverage
+docs
+src
+tests
+jest.config.ts
+webpack.config.js
+
+!dist/src
