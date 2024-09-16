@@ -7,9 +7,7 @@ Install via `npm install jisu`
 An online demo is available at https://ben-sb.github.io/jisu
 
 ## About
-JISU is a recursive descent parser (*roughly*). I say roughly as it uses the [precedence climbing method](https://en.wikipedia.org/wiki/Operator-precedence_parser) to parse binary and logical expressions.
-
-Currently I've been working on this in my free time, which I don't have a lot of right now, but I do plan to continue supporting more of the JS language. I may also write some AST manipulation tools for the obfuscation/deobfuscation enjoyers out there.
+JISU is *mostly* a recursive descent parser. It uses the bottom-up [precedence climbing method](https://en.wikipedia.org/wiki/Operator-precedence_parser) to parse binary and logical expressions.
 
 ## Specs
 The repo has two exports:
